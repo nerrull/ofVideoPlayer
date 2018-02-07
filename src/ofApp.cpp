@@ -9,10 +9,10 @@ void ofApp::setup(){
     receiver.setup( PORT );
     current_msg_string = 0;
 
-    string path = "/media/rice1902/OuterSpace/dataStore/VIDEO/fd_keyframe";
+    string path = "/media/rice1902/OuterSpace1/dataStore/VIDEO/mjpeg";
     ofSetDataPathRoot(path);
     dir= ofDirectory(path);
-    dir.allowExt("mp4");
+    dir.allowExt("mov");
     dir.listDir();
     movieFile = dir.getPath(1);
 
@@ -29,8 +29,8 @@ void ofApp::update(){
     MO.update();
 
     //seekInVideo();
-    playOscVideos();
-    //cycleVideos();
+    //playOscVideos();
+    cycleVideos();
 
 
 }
@@ -57,12 +57,10 @@ void ofApp::cycleVideos() {
 
     static int action = 0;
     static int moviecount = 1;
-    if (ofGetElapsedTimeMillis() - lastMod > 100) {
+    if (ofGetElapsedTimeMillis() - lastMod > 60) {
         if (action == 0) {
-            if (moviecount < dir.size()-1)
-                moviecount++;
-            else
-                moviecount = 0;
+
+            moviecount=rand()%dir.size();
             movieFile = dir.getPath(moviecount);
             ofLogError(ofToString(ofGetElapsedTimef(),3)) << "Append called from main loop " << movieFile ;
 
