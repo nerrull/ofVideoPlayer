@@ -12,14 +12,24 @@ Project{
         name: { return FileInfo.baseName(path) }
 
         files: [
+            "src/audiosampleplayer.cpp",
+            "src/audiosampleplayer.h",
+            "src/happlayermanager.cpp",
+            "src/happlayermanager.h",
+            "src/imageloader.cpp",
+            "src/imageloader.h",
             'src/main.cpp',
             'src/ofApp.cpp',
             'src/ofApp.h',
+            'src/ofxThreadedVideoPlayerManager.cpp',
+            'src/ofxThreadedVideoPlayerManager.h',
         ]
 
         of.addons: [
             'ofxOsc',
             'ofxGaplessVideo',
+            'ofxHDF5',
+            'ofxHapPlayer'
         ]
 
         // additional flags for the project. the of module sets some

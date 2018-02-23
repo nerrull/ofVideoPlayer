@@ -1,19 +1,17 @@
 #pragma once
 
 #include "ofMain.h"
-#include "ofxThreadedVideoPlayerManager.h"
+#include "ofxGaplessVideoplayer.h"
 #include "ofxOsc.h"
-#include "imageloader.h"
-#include "happlayermanager.h"
-// listen on port 12345
-#define TO_PLAY_PORT 33333
-#define PLAYING_FILE_NAME_PORT 44445
 
+// listen on port 12345
+#define PORT 33333
 #define NUM_MSG_STRINGS 20
 
 class ofApp : public ofBaseApp{
 
 public:
+    ofxGaplessVideoPlayer   MO;
     void setup();
     void update();
     void draw();
@@ -34,42 +32,18 @@ public:
 
 private:
     ofxOscReceiver receiver;
-    ofxOscSender sender;
-    HapPlayerManager* videoManager;
-
-    ofTexture t;
-    ofFbo fbo;
-    ofSoundStream soundStream;
-
+    int				current_msg_string;
     std::string		msg_strings[NUM_MSG_STRINGS];
+    float	timers[NUM_MSG_STRINGS];
     string		next_video;
     string		movieFile;
-
-    int SEEK_FRAME = 0;
-    int SPEED = 33*10;
-    int count =0;
-    bool SEEK = false;
-    bool USE_FRAMES = false;
-    bool ADD = false;
-    bool FBO_DIRTY = true;
-    bool NEW_VIDEOS =false;
-    vector<string> toPlay;
-    vector<string> lastToPlay;
-    deque<string> playing_queue;
-    ofMutex playing_mutex;
-
-
-
-    void audioOut(ofSoundBuffer & buffer);
     void cycleVideos();
     void getMessages();
+    void playOscVideos();
     void seekInVideo();
-    void addVideo();
-    bool getPlayingFile(string& filename);
-    void sendPlayingFile();
-    void setSpeed(int speedIndex);
-
-
+    int SEEK_FRAME = 0;
+    bool SEEK = false;
+    float SPEED = 1.0;
 
 
 
