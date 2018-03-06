@@ -9,6 +9,9 @@ ThreadedVideoPlayerManager::ThreadedVideoPlayerManager(deque<string> *pq, ofMute
     samplePlayer.loadHDF5Data(samplePath);
     playingVideoIndex = 0;
     lastVideoIndex =0;
+    LOADING=False;
+    PLAYING = False;
+
     for (int i=0; i<MAX_VIDEOS; i++){
         players[i].maxVol = 1.0f;
         players[i].status= empty;
@@ -72,30 +75,32 @@ bool ThreadedVideoPlayerManager::alreadyLoaded(string _path){
 }
 
 bool ThreadedVideoPlayerManager::loadVideo(string _path){
-    ofLogVerbose() << "Started loading " << _path ;
     string fullpath =videoPath +_path+".mov";
-    ofLogError(ofToString(ofGetElapsedTimef(),3)) << "[Loading] " << fullpath << " appended";
+    ofLogError(ofToString(ofGetElapsedTimef(),3)) << fullpath << " appended";
 
     if (alreadyLoaded(_path)){
        ofLogError(ofToString(ofGetElapsedTimef(),3)) << _path << " already loaded";
        return True;
     }
 
-    int freePlayer= getFreePlayerFromIndex(playingVideoIndex);
+    loadingPlayerIndex= getFreePlayerFromIndex(playingVideoIndex);
 
-    if (freePlayer == -1){
+    if (loadingPlayerIndex == -1 ||LOADING){
         ofLogError() << "Couldn't find a free video player";
         return False;
     }
+    LOADING =True;
 
-    ofLogVerbose(ofToString(ofGetElapsedTimef(),3)) << "Load call received";
+    ofLogError() << "Started loading " << _path ;
 
-    players[freePlayer].loadTime = ofGetElapsedTimeMillis();
-    players[freePlayer].video.setLoopState(OF_LOOP_NORMAL);
-    players[freePlayer].status  = loading;
-    players[freePlayer].videoID  = _path;
-    players[freePlayer].filePath  = fullpath;
-    players[freePlayer].video.loadAsync(fullpath);
+    players[loadingPlayerIndex].loadTime = ofGetElapsedTimeMillis();
+    players[loadingPlayerIndex].video.close();
+    players[loadingPlayerIndex].video.setLoopState(OF_LOOP_NORMAL);
+    players[loadingPlayerIndex].status  = loading;
+    players[loadingPlayerIndex].videoID  = _path;
+    players[loadingPlayerIndex].filePath  = fullpath;
+    players[loadingPlayerIndex].video.loadAsync(fullpath);
+    LOADING_TIMER=0;
     return True;
 }
 
@@ -180,23 +185,22 @@ void ThreadedVideoPlayerManager::_playNextVideo(){
         return;
     }
 
-    if(players[lastVideoIndex].video.isPlaying()){
-       players[lastVideoIndex].status=played;
-       players[lastVideoIndex].video.setPaused(true);
-       players[lastVideoIndex].video.setFrame(1);
+    PLAYING=true;
+    if(players[playingVideoIndex].video.isPlaying()){
+       players[playingVideoIndex].status=played;
+       players[playingVideoIndex].video.setFrame(1);
+       players[playingVideoIndex].video.setPaused(true);
 
-//       if (players[lastVideoIndex].video.getCurrentFrame()>players[lastVideoIndex].video.getTotalNumFrames()-30){
-//       }
-       //players[lastVideoIndex].status =empty;
     }
 
     lastVideoIndex = playingVideoIndex;
+
     playingVideoIndex=nextIndex;
 
     int frame = players[playingVideoIndex].video.getCurrentFrame();
-    if (sampler_active){
-        samplePlayer.playFile(players[playingVideoIndex].videoID, frame);
-    }
+
+    samplePlayer.playFile(players[playingVideoIndex].videoID, frame);
+
     players[playingVideoIndex].video.setVolume(0.0f);
     players[playingVideoIndex].video.setPaused(false);
     players[playingVideoIndex].status = playing;
@@ -234,6 +238,11 @@ void ThreadedVideoPlayerManager::update(){
         _playNextVideo();
         switch_timer = ofGetElapsedTimeMillis();
     }
+//    if (LOADING){
+//        if (players[loadingPlayerIndex].video.isLoaded()){
+//            //LOADING =false;
+//        }
+//    }
 
     if (queue.size()>0) {
         ThreadedVideoPlayerManager::command next_command;
@@ -248,10 +257,11 @@ void ThreadedVideoPlayerManager::update(){
         }
 
         if (next_command.type == "load") {
-            if (!loadVideo(next_command.path)){
+            if (!loadVideo(next_command.path) ){
                 if (lock()) {
                     queue.push_back(next_command);
                     unlock();
+
                 }
             }
         }
@@ -260,32 +270,45 @@ void ThreadedVideoPlayerManager::update(){
     for (int i=0; i<MAX_VIDEOS; i++){
         //Check if loading videos are ready to be started
         if (players[i].status==loading){
+            players[i].video.update();
+            LOADING_TIMER +=  ofGetElapsedTimeMillis()- players[i].loadTime;
+            if (LOADING_TIMER >100){
+                ofLogError()<<"Fatal error loading video";
+                players[i].video.close();
+                players[i].status = empty;
+                LOADING =false;
+            }
             if(players[i].video.isLoaded()) {
                 players[i].video.setVolume(0.0f);
                 players[i].video.setPaused(false);
+                players[i].video.update();
+
                 players[i].status =priming;
+                players[i].loadTime = ofGetElapsedTimeMillis() - players[i].loadTime;
+                players[i].primeTime = ofGetElapsedTimeMillis();
+
             }
         }
         //Check if priming videos have loaded their first frame
         else if (players[i].status==priming){
-            players[i].video.setPaused(false);
+            if (!players[i].video.isPlaying()){
+                players[i].video.setPaused(false);
+                ofLogError() <<"Shouldn't be here";
+            }
+
             players[i].video.update();
             if(players[i].video.isPlaying() && players[i].video.getCurrentFrame() >= 1){
-                if (!sampler_active){
-                    players[i].video.setVolume(1.0);
-                }
                 players[i].video.setPaused(true);
                 players[i].status =ready;
-                players[i].loadTime = ofGetElapsedTimeMillis() - players[i].loadTime;
+                //players[i].loadTime = ofGetElapsedTimeMillis() - players[i].loadTime;
+                players[i].primeTime = ofGetElapsedTimeMillis()- players[i].primeTime;
+                LOADING =false;
             }
         }
     }
 
     if (players[playingVideoIndex].status==playing){
         players[playingVideoIndex].video.update();
-    }
-    if (players[lastVideoIndex].status==playing){
-        players[lastVideoIndex].video.update();
     }
 }
 bool ThreadedVideoPlayerManager::draw(int x, int y){
@@ -319,6 +342,8 @@ bool ThreadedVideoPlayerManager::draw(int x, int y){
     os << "Current video"  << endl;
     os << "Index    : " << playingVideoIndex << endl;
     os << "Load    : " << players[playingVideoIndex].loadTime << endl;
+    os << "Prime    : " << players[playingVideoIndex].primeTime << endl;
+
     os << "Frame   : " << current_pos << "/" << total_pos << endl;
     os << "ID      : " <<  getFileName(players[playingVideoIndex].videoID) <<endl;
     os << "State   : " << state_string[players[playingVideoIndex].status ]<< endl << "------------------" << endl;
@@ -349,7 +374,7 @@ bool ThreadedVideoPlayerManager::draw(int x, int y){
 }
 
 void ThreadedVideoPlayerManager::audioOut(ofSoundBuffer& buffer){
-    if (sampler_active){
+    if (PLAYING){
         samplePlayer.audioOut(buffer);
     }
 

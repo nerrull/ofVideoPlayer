@@ -1,6 +1,6 @@
 #include "ofApp.h"
 
-ofDirectory dir;
+
 
 //--------------------------------------------------------------
 void ofApp::setup(){
@@ -8,7 +8,7 @@ void ofApp::setup(){
     ofSetFullscreen(true);
     //ofGetWindowPtr()->setVerticalSync(true);
     ofSetVerticalSync(true);
-    ofSetFrameRate(30);
+    //htopofSetFrameRate(30);
     ofSetBackgroundAuto(false);
     std::cout << "listening for osc messages on port " << TO_PLAY_PORT << "\n";
     std::cout << "sending osc messages on port " << TO_PLAY_PORT << "\n";
@@ -16,7 +16,8 @@ void ofApp::setup(){
     receiver.setup( TO_PLAY_PORT );
     sender.setup("localhost",PLAYING_FILE_NAME_PORT);
 
-    string path = "/media/rice1902/OuterSpace1/dataStore/VIDEO/mjpeg";
+    string path = "/media/rice1902/OuterSpace1/dataStore/VIDEO/mjpeg/";
+//    string path = "/media/rice1902/Seagate4T/hap_test/";
     ofSetDataPathRoot(path);
     dir= ofDirectory(path);
     dir.allowExt("mov");
@@ -27,10 +28,10 @@ void ofApp::setup(){
 //    string rawname = movieFile.substr(0, lastindex);
 
     //ofSetFrameRate(30);
-    videoManager = new HapPlayerManager(&playing_queue, &playing_mutex);
-    videoManager->loadAllVideos(dir);
+//    videoManager = new HapPlayerManager(&playing_queue, &playing_mutex);
+    videoManager = new ThreadedVideoPlayerManager(&playing_queue,&playing_mutex);
    // videoManager->receiveVideo(rawname);
-    videoManager->update();
+    //videoManager->update();
     fbo.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA);
 
     soundStream.printDeviceList();
@@ -41,16 +42,20 @@ void ofApp::setup(){
 
 //--------------------------------------------------------------
 void ofApp::update(){
+    if (FIRST_UPDATE){
+        //videoManager->loadAllVideos(dir);
+        FIRST_UPDATE = False;
+    }
     uint64_t mainUpdateTime = ofGetElapsedTimeMillis();
     getMessages();
     if (NEW_VIDEOS){
-        videoManager->setToPlay(toPlay);
+        //videoManager->readToPlay(toPlay);
         NEW_VIDEOS = False;
     }
     videoManager->update();
 
     //seekInVideo();
-    //if (ADD) addVideo();
+    if (ADD) addVideo();
 
     if (FBO_DIRTY){
         fbo.begin();
@@ -161,10 +166,14 @@ void ofApp::setSpeed(int speedIndex){
         SPEED =100;
     break;
     case 7:
+        SPEED =66;
+    break;
+    case 8:
         SPEED =33;
     break;
-
     }
+    videoManager->setSpeed(SPEED);
+
 
 }
 

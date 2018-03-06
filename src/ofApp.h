@@ -35,7 +35,9 @@ public:
 private:
     ofxOscReceiver receiver;
     ofxOscSender sender;
-    HapPlayerManager* videoManager;
+    //HapPlayerManager* videoManager;
+    ThreadedVideoPlayerManager* videoManager;
+
 
     ofTexture t;
     ofFbo fbo;
@@ -53,10 +55,12 @@ private:
     bool ADD = false;
     bool FBO_DIRTY = true;
     bool NEW_VIDEOS =false;
+    bool FIRST_UPDATE = True;
     vector<string> toPlay;
     vector<string> lastToPlay;
     deque<string> playing_queue;
     ofMutex playing_mutex;
+    ofDirectory dir;
 
 
 

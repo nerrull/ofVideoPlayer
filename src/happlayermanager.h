@@ -20,6 +20,8 @@ public:
     void setVolume(float _volume);
     void receiveVideo(string path);
     void setToPlay(vector<string> toPlay);
+    void readToPlay(vector<string>toPlay);
+
     void setSpeed(int speed);
     void loadAllVideos(ofDirectory dir);
     void update();
@@ -64,6 +66,8 @@ private:
     vector<string> toPlay;
 
     vector<player*> players;
+    vector<int> toPlayVideoIndexes;
+    int toPlayVideoIndex =0;
     AudioSamplePlayer samplePlayer;
     string videoPath;
     uint64_t switch_timer;
@@ -82,6 +86,12 @@ private:
     int getFreePlayerFromIndex(int playerIndex);
     void emptyOldVideos(vector<string> toPlay);
     void setAllVolumes(float);
+    int getNextPlayerIndex();
+    void addVideoPlayer(string _path);
+    void _playNextVideoLoaded();
+
+
+
     virtual void threadedFunction();
 
     uint64_t call_time;

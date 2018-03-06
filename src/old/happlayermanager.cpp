@@ -6,8 +6,6 @@ HapPlayerManager::HapPlayerManager(deque<string> *pq, ofMutex *pm)
     this->playing_mutex = pm;
     string samplePath = "/media/rice1902/OuterSpace1/dataStore/audio_samples.h5";
     videoPath = "/media/rice1902/OuterSpace1/dataStore/VIDEO/hap/";
-    //videoPath = "/media/rice1902/Seagate4T/hap_test/";
-
     samplePlayer.loadHDF5Data(samplePath);
     playingVideoIndex = 0;
     lastVideoIndex =0;
@@ -15,13 +13,13 @@ HapPlayerManager::HapPlayerManager(deque<string> *pq, ofMutex *pm)
     LOADING =false;
     PLAYING = false;
     OVERLAY= true;
-//    for (int i=0; i<MAX_VIDEOS; i++){
-//        players.push_back(new player());
-//        players[i]->video.setLoopState(OF_LOOP_NORMAL);
-//        players[i]->maxVol = 1.0f;
-//        players[i]->status= empty;
-//        players[i]->videoID = "/EMPTY";
-//    }
+    for (int i=0; i<MAX_VIDEOS; i++){
+        players.push_back(new player());
+        players[i]->video.setLoopState(OF_LOOP_NORMAL);
+        players[i]->maxVol = 1.0f;
+        players[i]->status= empty;
+        players[i]->videoID = "/EMPTY";
+    }
     switch_timer = ofGetElapsedTimeMillis();
     call_time = ofGetElapsedTimeMillis();
 
@@ -35,10 +33,10 @@ HapPlayerManager::~HapPlayerManager() {
 
 void HapPlayerManager::loadAllVideos(ofDirectory dir){
    for (int i = 0; i<dir.size();i++){
-       string movieFile = dir.getName(i);
+       movieFile = dir.getName(moviecount);
        size_t lastindex = movieFile.find_last_of(".");
        string rawname = movieFile.substr(0, lastindex);
-       addVideoPlayer(rawname);
+       receiveVideo(rawName);
    }
 }
 
@@ -87,6 +85,8 @@ void HapPlayerManager::threadedFunction(){
     players[loadIndex]->video.load(players[loadIndex]->filePath);
     players[loadIndex]->loadTime = ofGetElapsedTimeMillis()-players[loadIndex]->loadTime;
     LOADING =false;
+
+
 }
 
 bool HapPlayerManager::loadVideo(string _path){
@@ -124,52 +124,6 @@ bool HapPlayerManager::loadVideo(string _path){
 
 
     return True;
-}
-
-void HapPlayerManager::addVideoPlayer(string _path){
-    string fullpath =videoPath +_path+".mov";
-    ofLogError(ofToString(ofGetElapsedTimef(),3)) << "[Loading] " << fullpath;
-    player * p = new player;
-
-    p->status  = loading;
-
-    p->loadTime = ofGetElapsedTimeMillis();
-    p->video.setLoopState(OF_LOOP_NORMAL);
-    p->videoID  = _path;
-    p->filePath  = fullpath;
-
-    p->video.load(fullpath);
-    p->loadTime = ofGetElapsedTimeMillis()-p->loadTime;
-    players.push_back(p);
-    toPlayVideoIndexes.push_back(players.size()-1);
-}
-
-
-void HapPlayerManager::readToPlay(vector<string>toPlay){\
-    string toPlayId;
-    toPlayVideoIndexes.clear();
-    for (int vIndex = 0; vIndex<players.size();vIndex++){
-        for (int i = 0; i< toPlay.size(); i++){
-            if (strcmp(toPlay[i].c_str(), players[vIndex]->videoID.c_str()) ==0){
-                toPlayVideoIndexes.push_back(vIndex);
-            }
-        }
-    }
-
-}
-
-
-int HapPlayerManager::getNextPlayerIndex(){
-    if (toPlayVideoIndex < (toPlayVideoIndexes.size() -1)){
-        toPlayVideoIndex++;
-        return toPlayVideoIndexes[toPlayVideoIndex];
-
-    }
-    else{
-        toPlayVideoIndex =0;
-        //ofRandomize(toPlayVideoIndexes);
-        return toPlayVideoIndexes[0];
-    }
 }
 
 int HapPlayerManager::getNextPlayerFromIndex(int playerIndex){
@@ -246,37 +200,6 @@ void HapPlayerManager::emptyOldVideos(vector<string> toPlay){
 }
 
 
-
-void HapPlayerManager::_playNextVideoLoaded(){
-    int playerIndex =playingVideoIndex;
-    int nextIndex = getNextPlayerIndex();
-
-    PLAYING = true;
-    lastVideoIndex = playingVideoIndex;
-
-    if(!players[lastVideoIndex]->video.isPaused()){
-       players[lastVideoIndex]->status=played;
-       players[lastVideoIndex]->video.setPaused(true);
-       players[lastVideoIndex]->video.setPosition(0);
-    }
-    playingVideoIndex=nextIndex;
-
-    int frame = players[playingVideoIndex]->video.getPosition()*players[playingVideoIndex]->video.getDuration()/0.033 ;
-    samplePlayer.playFile(players[playingVideoIndex]->videoID, frame);
-
-    players[playingVideoIndex]->video.setVolume(0.0f);
-    players[playingVideoIndex]->video.setPaused(false);
-    players[playingVideoIndex]->status = playing;
-
-    std::unique_lock<std::mutex> lock(*playing_mutex, std::try_to_lock);
-    if(!lock.owns_lock()){
-        ofLogError(ofToString(ofGetElapsedTimef(),3)) << "Couldn't update playing video";
-        return;
-    }
-    playing_queue->push_front( players[playingVideoIndex]->videoID);
-
-}
-
 void HapPlayerManager::_playNextVideo(){
     int playerIndex =playingVideoIndex;
     int nextIndex = getNextPlayerFromIndex(playerIndex);
@@ -335,6 +258,14 @@ void HapPlayerManager::update(){
     //uint64_t update_time = ofGetElapsedTimeMillis();
 
 
+    emptyOldVideos(toPlay);
+
+
+    if (ofGetElapsedTimeMillis() - switch_timer > switch_ms) {
+        _playNextVideo();
+        switch_timer = ofGetElapsedTimeMillis();
+    }
+
     if (queue.size()>0 && (internal_counter++ %10)==0) {
         HapPlayerManager::command next_command;
         if (lock()) {
@@ -376,17 +307,12 @@ void HapPlayerManager::update(){
         }
     }
 
-    if (ofGetElapsedTimeMillis() - switch_timer > switch_ms) {
-        _playNextVideoLoaded();
-        switch_timer = ofGetElapsedTimeMillis();
+    if (players[playingVideoIndex]->status==playing){
+        players[playingVideoIndex]->video.update();
     }
-
-//    if (players[playingVideoIndex]->status==playing){
-//        players[playingVideoIndex]->video.update();
-//    }
-//    if (players[lastVideoIndex]->status==playing){
-//        players[lastVideoIndex]->video.update();
-//    }
+    if (players[lastVideoIndex]->status==playing){
+        players[lastVideoIndex]->video.update();
+    }
 
     //update_time = ofGetElapsedTimeMillis() - update_time ;
     //ofLogError()<<"Update time : " <<update_time;
@@ -438,14 +364,14 @@ bool HapPlayerManager::draw(int x, int y){
     os << "Playing : " << players[lastVideoIndex]->video.isPlaying() << endl;
     os << "State   : " << state_string[ players[lastVideoIndex]->status] << endl << "------------------" << endl;
 
-//    for (int i=0; i<MAX_VIDEOS; i++){
-//        os << "Player  :"  << i<<endl;
-//        os << "State   : " << state_string[ players[i]->status] << endl;
-//        os << "Path    : " << players[i]->filePath << endl;
-//        os << "ID      : " <<  getFileName(players[i]->videoID) <<endl;
-//        os << "Position   : " << players[i]->video.getPosition() << "/" << players[i]->video.getDuration() << endl << "------------------" << endl;
+    for (int i=0; i<MAX_VIDEOS; i++){
+        os << "Player  :"  << i<<endl;
+        os << "State   : " << state_string[ players[i]->status] << endl;
+        os << "Path    : " << players[i]->filePath << endl;
+        os << "ID      : " <<  getFileName(players[i]->videoID) <<endl;
+        os << "Position   : " << players[i]->video.getPosition() << "/" << players[i]->video.getDuration() << endl << "------------------" << endl;
 
-//    }
+    }
 
 
     ofDrawBitmapString(os.str(), w-w/4+2, 17);

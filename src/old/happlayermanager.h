@@ -1,31 +1,34 @@
-#ifndef OFXTHREADEDVIDEOPLAYERMANAGER_H
-#define OFXTHREADEDVIDEOPLAYERMANAGER_H
+
+#ifndef HAPPLAYERMANAGER_H
+#define HAPPLAYERMANAGER_H
+
 #include "ofMain.h"
 #include "audiosampleplayer.h"
 #include "ofxHapPlayer.h"
-#define MAX_VIDEOS 12
+#define MAX_VIDEOS 8
 
-class ThreadedVideoPlayerManager:public ofThread{
+class HapPlayerManager:public ofThread{
 
 public:
-    ThreadedVideoPlayerManager(deque<string>*, ofMutex*);
-    ~ThreadedVideoPlayerManager();
+
+    int playingVideoIndex;
+    int lastVideoIndex;
+
+
+    HapPlayerManager(deque<string>*, ofMutex*);
+    ~HapPlayerManager();
     void setVolume(float _volume);
     void receiveVideo(string path);
     void setToPlay(vector<string> toPlay);
     void setSpeed(int speed);
-
-
-    int playingVideoIndex;
-    int lastVideoIndex;
-    int loadingPlayerIndex;
+    void loadAllVideos(ofDirectory dir);
     void update();
     bool draw(int x, int y);
 
-    void audioOut(ofSoundBuffer& buffer);
 
-    float getWidth() {return players[playingVideoIndex].video.isLoaded() ? players[playingVideoIndex].video.getWidth() : 0;}
-    float getHeight() {return players[playingVideoIndex].video.isLoaded() ? players[playingVideoIndex].video.getHeight() : 0;}
+    void audioOut(ofSoundBuffer& buffer);
+    float getWidth() {return players[playingVideoIndex]->video.isLoaded() ? players[playingVideoIndex]->video.getWidth() : 0;}
+    float getHeight() {return players[playingVideoIndex]->video.isLoaded() ? players[playingVideoIndex]->video.getHeight() : 0;}
 
 
 
@@ -38,11 +41,9 @@ private:
 
 
     struct player {
-        ofVideoPlayer video;
+        ofxHapPlayer video;
         bool          fade;
         int           loadTime;
-        int           primeTime;
-
         float         maxVol;
         PStatus       status;
         string        videoID;
@@ -62,16 +63,18 @@ private:
     deque<command> queue;
     vector<string> toPlay;
 
-    player players[MAX_VIDEOS];
+    vector<player*> players;
     AudioSamplePlayer samplePlayer;
     string videoPath;
     uint64_t switch_timer;
-    uint64_t LOADING_TIMER;
-
     int switch_ms=330;
-    bool sampler_active= true;
+
+    bool alreadyLoaded(string _path);
+    void _playNextVideo();
     bool LOADING;
     bool PLAYING;
+    bool OVERLAY;
+    int loadIndex;
 
     string getFileName(string );
     bool loadVideo(string _path);
@@ -79,10 +82,10 @@ private:
     int getFreePlayerFromIndex(int playerIndex);
     void emptyOldVideos(vector<string> toPlay);
     void setAllVolumes(float);
+    virtual void threadedFunction();
 
-    bool alreadyLoaded(string _path);
-    void _playNextVideo();
-
+    uint64_t call_time;
+    int internal_counter = 0;
 
 
 
