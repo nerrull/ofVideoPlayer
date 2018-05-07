@@ -93,7 +93,7 @@ bool ThreadedVideoPlayerManager::loadVideo(string _path){
     }
     int nextIndex = getFreePlayerFromIndex(playingVideoIndex);
 
-    if (nextIndex == -1){
+    if (nextIndex == NULL){
         ofLogError() << "Couldn't find a free video player";
         return False;
     }
@@ -206,16 +206,13 @@ void ThreadedVideoPlayerManager::_playNextVideo(){
     int nextIndex = getNextPlayerFromIndex(playingVideoIndex);
     if (nextIndex == -1){
         ofLogError() << "Couldn't find a ready player";
-        if (playingVideoPointer->status==playing)
-        {
-            playingVideoPointer->video.setFrame(1);
-            samplePlayer.playFile(playingVideoPointer->videoID, 1);
-        }
+        playingVideoPointer->video.setFrame(1);
+        samplePlayer.playFile(playingVideoPointer->videoID, 1);
         return;
     }
     playingVideoIndex =nextIndex;
     PLAYING=true;
-    if(playingVideoPointer->status ==playing){
+    if(playingVideoPointer->video.isPlaying()){
        playingVideoPointer->status=played;
        playingVideoPointer->video.setFrame(1);
        playingVideoPointer->video.setPaused(true);
@@ -349,7 +346,7 @@ bool ThreadedVideoPlayerManager::draw(int x, int y){
     if (players.size()==0){
         return False;
     }
-    if (!(playingVideoPointer->status ==playing)){
+    if (!playingVideoPointer->video.isLoaded()){
         return False;
     }
     static bool isDrawing = false;
@@ -391,15 +388,15 @@ bool ThreadedVideoPlayerManager::draw(int x, int y){
     os << "State   : " << state_string[playingVideoPointer->status ]<< endl << "------------------" << endl;
 
 
-//    os << "Last video"  << endl;
-//    //os << "Index    : " << lastVideoIndex << endl;
-//    os << "ID      : " <<  getFileName(lastVideoPointer->videoID)<< endl;
-//    os << "Load    : " << lastVideoPointer->loadTime << endl;
-//    os << "Prime    : " << lastVideoPointer->primeTime << endl;
+    os << "Last video"  << endl;
+    //os << "Index    : " << lastVideoIndex << endl;
+    os << "ID      : " <<  getFileName(lastVideoPointer->videoID)<< endl;
+    os << "Load    : " << lastVideoPointer->loadTime << endl;
+    os << "Prime    : " << lastVideoPointer->primeTime << endl;
 
-//    os << "Frame   : " << lastVideoPointer->video.getCurrentFrame() << "/" << lastVideoPointer->video.getTotalNumFrames() << endl;
-//    os << "Playing : " <<lastVideoPointer->video.isPlaying() << endl;
-//    os << "State   : " << state_string[ lastVideoPointer->status] << endl << "------------------" << endl;
+    os << "Frame   : " << lastVideoPointer->video.getCurrentFrame() << "/" << lastVideoPointer->video.getTotalNumFrames() << endl;
+    os << "Playing : " <<lastVideoPointer->video.isPlaying() << endl;
+    os << "State   : " << state_string[ lastVideoPointer->status] << endl << "------------------" << endl;
 
     for (int i=0; i<players.size(); i++){
         os << "Player  :"  << i<<endl;

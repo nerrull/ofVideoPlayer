@@ -155,7 +155,6 @@ void HapPlayerManager::readToPlay(vector<string>toPlay){\
             }
         }
     }
-
 }
 
 

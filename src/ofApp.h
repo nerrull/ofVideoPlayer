@@ -35,8 +35,8 @@ public:
 private:
     ofxOscReceiver receiver;
     ofxOscSender sender;
-    //HapPlayerManager* videoManager;
-    ThreadedVideoPlayerManager* videoManager;
+    HapPlayerManager* videoManager;
+    //ThreadedVideoPlayerManager* videoManager;
 
 
     ofTexture t;
