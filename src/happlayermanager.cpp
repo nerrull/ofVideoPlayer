@@ -4,11 +4,15 @@ HapPlayerManager::HapPlayerManager(deque<string> *pq, ofMutex *pm)
 {
     this->playing_queue= pq;
     this->playing_mutex = pm;
-    string samplePath = "/media/rice1902/OuterSpace1/dataStore/audio_samples.h5";
-    videoPath = "/media/rice1902/OuterSpace1/dataStore/VIDEO/hap/";
+    string samplePath = "/media/rice1902/OuterSpace2/dataStore/audio_samples.h5";
+    videoPath = "/media/rice1902/OuterSpace2/dataStore/VIDEO/hap/";
+    string audiopath = "/media/rice1902/OuterSpace2/dataStore/AUDIO/full_audio/";
+
     //videoPath = "/media/rice1902/Seagate4T/hap_test/";
 
-    samplePlayer.loadHDF5Data(samplePath);
+    //samplePlayer.loadHDF5Data(samplePath);
+    samplePlayer.init(audiopath ,-1);
+
     playingVideoIndex = 0;
     lastVideoIndex =0;
     loadIndex =0;
@@ -31,14 +35,22 @@ HapPlayerManager::HapPlayerManager(deque<string> *pq, ofMutex *pm)
 // Destructor
 HapPlayerManager::~HapPlayerManager() {
 //todo : stop + close all videos
+    for (auto p: players){
+        p.video.stop();
+        p.video.close();
+    }
 }
 
 void HapPlayerManager::loadAllVideos(ofDirectory dir){
-   for (int i = 0; i<dir.size();i++){
+   int num_videos = dir.size();
+   //DEBUG MODE
+   num_videos = 50;
+
+   for (int i = 0; i<num_videos;i++){
        string movieFile = dir.getName(i);
        size_t lastindex = movieFile.find_last_of(".");
        string rawname = movieFile.substr(0, lastindex);
-       addVideoPlayer(rawname);
+       addVideoPlayer(rawname, False);
    }
 }
 
@@ -126,7 +138,7 @@ bool HapPlayerManager::loadVideo(string _path){
     return True;
 }
 
-void HapPlayerManager::addVideoPlayer(string _path){
+void HapPlayerManager::addVideoPlayer(string _path, bool async = True){
     string fullpath =videoPath +_path+".mov";
     ofLogError(ofToString(ofGetElapsedTimef(),3)) << "[Loading] " << fullpath;
     player * p = new player;
@@ -333,7 +345,7 @@ void HapPlayerManager::update(){
     //ofLogError()<<"Call time : " <<ofGetElapsedTimeMillis() - call_time;
     //uint64_t update_time = ofGetElapsedTimeMillis();
 
-
+    samplePlayer.update();
     if (queue.size()>0 && (internal_counter++ %10)==0) {
         HapPlayerManager::command next_command;
         if (lock()) {
@@ -455,7 +467,7 @@ bool HapPlayerManager::draw(int x, int y){
 }
 
 void HapPlayerManager::audioOut(ofSoundBuffer& buffer){
-    if (PLAYING) samplePlayer.audioOut(buffer);
+    //if (PLAYING) samplePlayer.audioOut(buffer);
 
 
 }

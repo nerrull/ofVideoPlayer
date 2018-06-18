@@ -18,6 +18,8 @@ Project{
             "src/happlayermanager.h",
             "src/imageloader.cpp",
             "src/imageloader.h",
+            "src/simplesampleplayer.cpp",
+            "src/simplesampleplayer.h",
             'src/main.cpp',
             'src/ofApp.cpp',
             'src/ofApp.h',
@@ -29,7 +31,8 @@ Project{
             'ofxOsc',
             'ofxGaplessVideo',
             'ofxHDF5',
-            'ofxHapPlayer'
+            'ofxHapPlayer',
+            'ofxSoundObjects'
         ]
 
         // additional flags for the project. the of module sets some

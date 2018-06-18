@@ -18,10 +18,12 @@ void ofApp::setup(){
     receiver.setup( TO_PLAY_PORT );
     sender.setup("localhost",PLAYING_FILE_NAME_PORT);
 
-    string path = "/media/rice1902/OuterSpace1/dataStore/VIDEO/hap/";
+    string video_path = "/media/rice1902/OuterSpace2/dataStore/VIDEO/hap/";
+    string audio_path = "/media/rice1902/OuterSpace2/dataStore/AUDIO/full_audio/";
+
 //    string path = "/media/rice1902/Seagate4T/hap_test/";
-    ofSetDataPathRoot(path);
-    dir= ofDirectory(path);
+    ofSetDataPathRoot(video_path);
+    dir= ofDirectory(video_path);
     dir.allowExt("mov");
     dir.listDir();
 
@@ -36,9 +38,9 @@ void ofApp::setup(){
     //videoManager->update();
     fbo.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA);
 
-    soundStream.printDeviceList();
-    soundStream.setDeviceID(6); //Is computer-specific
-    soundStream.setup(this, 1, 0, SAMPLE_RATE, AUDIO_BUFFER_LENGTH, 4);
+//    soundStream.printDeviceList();
+//    soundStream.setDeviceID(6); //Is computer-specific
+//    soundStream.setup(this, 1, 0, SAMPLE_RATE, AUDIO_BUFFER_LENGTH, 4);
 
 }
 
@@ -76,7 +78,7 @@ void ofApp::update(){
         sendPlayingFile();
     }
     mainUpdateTime = ofGetElapsedTimeMillis() -mainUpdateTime;
-    ofLogError()<<"Main update time: "<< mainUpdateTime;
+    //ofLogError()<<"Main update time: "<< mainUpdateTime;
 }
 
 
@@ -118,7 +120,7 @@ void ofApp::draw(){
     ofDrawBitmapString(strm.str(),20, 20);
     FBO_DIRTY = true;
     drawUpdateTime = ofGetElapsedTimeMillis() -drawUpdateTime;
-    ofLogError()<<"Draw time: "<< drawUpdateTime;
+   // ofLogError()<<"Draw time: "<< drawUpdateTime;
 }
 
 bool ofApp::getPlayingFile(string& filename){
@@ -312,7 +314,7 @@ void ofApp::dragEvent(ofDragInfo dragInfo){
 
 }
 
-void ofApp::audioOut(ofSoundBuffer & buffer){
+//void ofApp::audioOut(ofSoundBuffer & buffer){
 
-  videoManager->audioOut(buffer);
-}
+//  videoManager->audioOut(buffer);
+//}

@@ -5,6 +5,7 @@
 #include "ofMain.h"
 #include "audiosampleplayer.h"
 #include "ofxHapPlayer.h"
+#include "simplesampleplayer.h"
 #define MAX_VIDEOS 8
 
 class HapPlayerManager:public ofThread{
@@ -68,7 +69,10 @@ private:
     vector<player*> players;
     vector<int> toPlayVideoIndexes;
     int toPlayVideoIndex =0;
-    AudioSamplePlayer samplePlayer;
+
+//    AudioSamplePlayer samplePlayer;
+    SimpleSamplePlayer samplePlayer;
+
     string videoPath;
     uint64_t switch_timer;
     int switch_ms=330;
@@ -87,7 +91,7 @@ private:
     void emptyOldVideos(vector<string> toPlay);
     void setAllVolumes(float);
     int getNextPlayerIndex();
-    void addVideoPlayer(string _path);
+    void addVideoPlayer(string _path, bool load_async );
     void _playNextVideoLoaded();
 
 

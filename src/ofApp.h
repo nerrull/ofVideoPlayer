@@ -10,6 +10,7 @@
 #define PLAYING_FILE_NAME_PORT 44445
 
 #define NUM_MSG_STRINGS 20
+#define DEV_MODE 1
 
 class ofApp : public ofBaseApp{
 
@@ -41,7 +42,7 @@ private:
 
     ofTexture t;
     ofFbo fbo;
-    ofSoundStream soundStream;
+    //ofSoundStream soundStream;
 
     std::string		msg_strings[NUM_MSG_STRINGS];
     string		next_video;
@@ -64,7 +65,7 @@ private:
 
 
 
-    void audioOut(ofSoundBuffer & buffer);
+    //void audioOut(ofSoundBuffer & buffer);
     void cycleVideos();
     void getMessages();
     void seekInVideo();
