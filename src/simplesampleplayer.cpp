@@ -57,34 +57,3 @@ void SimpleSamplePlayer::playFile(string sample_name, int start_frame){
 //    }
     players[index].connectTo(fader);
 }
-
-void SimpleSamplePlayer::update(){
-
-//    if (players[last_index].isPlaying()){
-//        float v = mixer.getChannelVolume(last_index);
-//        if( v <0.2){
-//            players[last_index].setPaused(True);
-//            players[last_index].setPosition(0.);
-//            mixer.setChannelVolume(last_index, 0.);
-//        }
-
-//        mixer.setChannelVolume(last_index,v*0.95);
-//    }
-
-//    if (players[current_index].isPlaying()){
-//        float v = mixer.getChannelVolume(current_index);
-//        if( v==1.0){
-//           return;
-//        }
-//        else if( v==0.0){
-//            mixer.setChannelVolume(current_index,0.1);
-//        }
-
-//        else if( v>0.9){
-//            mixer.setChannelVolume(current_index,1.);
-//        }
-//        else {
-//            mixer.setChannelVolume(current_index,v*1.1);
-//        }
-//    }
-}

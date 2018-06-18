@@ -21,29 +21,15 @@ void ofApp::setup(){
     string video_path = "/media/rice1902/OuterSpace2/dataStore/VIDEO/hap/";
     string audio_path = "/media/rice1902/OuterSpace2/dataStore/AUDIO/full_audio/";
 
-//    string path = "/media/rice1902/Seagate4T/hap_test/";
+    //    string path = "/media/rice1902/Seagate4T/hap_test/";
     ofSetDataPathRoot(video_path);
     dir= ofDirectory(video_path);
     dir.allowExt("mov");
     dir.listDir();
 
-//    movieFile = dir.getName(1);
-//    size_t lastindex = movieFile.find_last_of(".");
-//    string rawname = movieFile.substr(0, lastindex);
-
-    //ofSetFrameRate(30);
     videoManager = new HapPlayerManager(&playing_queue, &playing_mutex);
-    //videoManager = new ThreadedVideoPlayerManager(&playing_queue,&playing_mutex);
-    // videoManager->receiveVideo(rawname);
-    //videoManager->update();
     fbo.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA);
     videoManager->loadAllVideos(dir);
-
-
-//    soundStream.printDeviceList();
-//    soundStream.setDeviceID(6); //Is computer-specific
-//    soundStream.setup(this, 1, 0, SAMPLE_RATE, AUDIO_BUFFER_LENGTH, 4);
-
 }
 
 //--------------------------------------------------------------
@@ -51,14 +37,16 @@ void ofApp::update(){
     uint64_t mainUpdateTime = ofGetElapsedTimeMillis();
     getMessages();
     if (NEW_VIDEOS){
-        videoManager->readToPlay(toPlay);
-        //videoManager->setToPlay(toPlay);
+        if (PLAY_IMMEDIATELY){
+            videoManager->playNow(toPlay[0]);
+            PLAY_IMMEDIATELY = False;
+        }
+        else{
+            videoManager->readToPlay(toPlay);
+        }
         NEW_VIDEOS = False;
     }
     videoManager->update();
-
-    //seekInVideo();
-    //if (ADD) addVideo();
 
     if (FBO_DIRTY){
         fbo.begin();
@@ -101,24 +89,24 @@ void ofApp::draw(){
     uint64_t drawUpdateTime = ofGetElapsedTimeMillis();
     float w = videoManager->getWidth();
     float h = videoManager->getHeight();
-//    if (USE_FRAMES){
+    //    if (USE_FRAMES){
 
-//        t.draw(0,0);
-//    }
-//    else{
-//        videoManager.draw(0,0 , w, h);
-//    }
+    //        t.draw(0,0);
+    //    }
+    //    else{
+    //        videoManager.draw(0,0 , w, h);
+    //    }
     fbo.draw(0,0);
 
     ofSetColor(255);
     std::stringstream strm;
     strm << "FPS: " << ofGetFrameRate()<<endl;
     strm << "SPEED: " << SPEED<<endl;
-
-    ofDrawBitmapString(strm.str(),20, 20);
+    w = ofGetWidth();
+    ofDrawBitmapString(strm.str(), w-w/4+2, 20);
     FBO_DIRTY = true;
     drawUpdateTime = ofGetElapsedTimeMillis() -drawUpdateTime;
-   // ofLogError()<<"Draw time: "<< drawUpdateTime;
+    // ofLogError()<<"Draw time: "<< drawUpdateTime;
 }
 
 bool ofApp::getPlayingFile(string& filename){
@@ -147,32 +135,32 @@ void ofApp::setSpeed(int speedIndex){
     switch (speedIndex){
     //full length
     case 0:
-        SPEED =10000;
-    break;
+        SPEED =-1;
+        break;
     case 1:
         SPEED =4000;
-    break;
+        break;
     case 2:
         SPEED =2000;
-    break;
+        break;
     case 3:
         SPEED =1000;
-    break;
+        break;
     case 4:
         SPEED =500;
-    break;
+        break;
     case 5:
         SPEED =250;
-    break;
+        break;
     case 6:
         SPEED =100;
-    break;
+        break;
     case 7:
         SPEED =66;
-    break;
+        break;
     case 8:
         SPEED =33;
-    break;
+        break;
     }
     videoManager->setSpeed(SPEED);
 
@@ -204,9 +192,22 @@ void ofApp::getMessages() {
             NEW_VIDEOS = True;
         }
 
+        if ( m.getAddress().compare( string("/PLAY_NOW") ) == 0 )
+        {
+            // the single argument is a string
+            //strcpy( next_video, m.getArgAsString( 0 ) );
+            lastToPlay = toPlay;
+            toPlay.clear();
+            string name = m.getArgAsString( 0);
+            toPlay.push_back(name);
+            NEW_VIDEOS = True;
+            PLAY_IMMEDIATELY = True;
+
+        }
+
         if ( m.getAddress().compare( string("/SET_SPEED") ) == 0 )
         {
-           setSpeed(m.getArgAsInt32(0));
+            setSpeed(m.getArgAsInt32(0));
 
         }
 
@@ -239,26 +240,27 @@ void ofApp::getMessages() {
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
     switch (key){
-        case ' ':
-            ADD= !ADD;
-            break;
-        case 'w':
-            break;
-        case 's':
+    case ' ':
+        ADD= !ADD;
+        break;
+    case 'w':
+        break;
+    case 's':
 
-            break;
-        case 'd':
-            SPEED +=33;
-            videoManager->setSpeed(SPEED);
-            break;
-        case 'a':
-            SPEED -=33;
-            SPEED =max(SPEED,33);
+        break;
+    case 'd':
+        SPEED +=33;
+        videoManager->setSpeed(SPEED);
+        break;
+    case 'a':
+        SPEED -=33;
+        SPEED =max(SPEED,33);
 
-            videoManager->setSpeed(SPEED);
-            break;
+        videoManager->setSpeed(SPEED);
+        break;
 
-
+    case 'h':
+        videoManager->toggleOverlay();
     }
 }
 

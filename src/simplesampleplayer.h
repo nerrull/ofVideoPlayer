@@ -16,7 +16,6 @@ public:
 
     void playFile(string sample_name, int start_frame);
     void init (string path, int num_files);
-    void update();
 
     //ofxSoundMixer mixer;
     ofxTwoChannelFader fader;

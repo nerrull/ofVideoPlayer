@@ -18,7 +18,6 @@ public:
 
     HapPlayerManager(deque<string>*, ofMutex*);
     ~HapPlayerManager();
-    void setVolume(float _volume);
     void receiveVideo(string path);
     void setToPlay(vector<string> toPlay);
     void readToPlay(vector<string>toPlay);
@@ -30,8 +29,10 @@ public:
 
 
     void audioOut(ofSoundBuffer& buffer);
-    float getWidth() {return players[playingVideoIndex]->video.isLoaded() ? players[playingVideoIndex]->video.getWidth() : 0;}
-    float getHeight() {return players[playingVideoIndex]->video.isLoaded() ? players[playingVideoIndex]->video.getHeight() : 0;}
+    float getWidth() {return players[playingVideoIndex].video.isLoaded() ? players[playingVideoIndex].video.getWidth() : 0;}
+    float getHeight() {return players[playingVideoIndex].video.isLoaded() ? players[playingVideoIndex].video.getHeight() : 0;}
+    void toggleOverlay();
+    void playNow(string toPlay);
 
 
 
@@ -42,16 +43,26 @@ private:
 
     enum PStatus { empty, loading,priming, ready, playing, played};
 
-
     struct player {
-        ofxHapPlayer video;
+        player(){
+
+        }
+
+        player(const player& p){
+            fade = p.fade;
+            loadTime = p.loadTime;
+            status = p.status;
+            videoID = p.videoID;
+            filePath = p.filePath;
+        }
+
+
+        ofxHapPlayer  video;
         bool          fade;
         int           loadTime;
-        float         maxVol;
         PStatus       status;
         string        videoID;
         string        filePath;
-
 
     };
 
@@ -66,7 +77,7 @@ private:
     deque<command> queue;
     vector<string> toPlay;
 
-    vector<player*> players;
+    vector<player> players;
     vector<int> toPlayVideoIndexes;
     int toPlayVideoIndex =0;
 
@@ -87,6 +98,7 @@ private:
 
     string getFileName(string );
     bool loadVideo(string _path);
+
     int getNextPlayerFromIndex(int playerIndex);
     int getFreePlayerFromIndex(int playerIndex);
     void emptyOldVideos(vector<string> toPlay);
@@ -95,9 +107,6 @@ private:
     void addVideoPlayer(string _path, bool load_async );
     void _playNextVideoLoaded();
 
-
-
-    virtual void threadedFunction();
 
     uint64_t call_time;
     int internal_counter = 0;
