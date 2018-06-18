@@ -3,7 +3,7 @@
 SimpleSamplePlayer::SimpleSamplePlayer()
 {
     stream.setDeviceID(6); //Is computer-specific
-    int num_channels = 1;
+    int num_channels = 2;
     int bufferlength = 1024;
     stream.setup(num_channels  , 0, 48000, bufferlength, 1);
     stream.setOutput(fader);
@@ -49,7 +49,7 @@ void SimpleSamplePlayer::playFromIndex(int i){
        players[i].connectTo(fader);
 }
 
-
+//The fader controls the playback
 void SimpleSamplePlayer::playFile(string sample_name, int start_frame){
     ptrdiff_t index= getSampleIndexFromName(sample_name);
 //    if (!players[index].isPlaying()){

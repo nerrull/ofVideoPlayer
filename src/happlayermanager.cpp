@@ -28,23 +28,20 @@ HapPlayerManager::HapPlayerManager(deque<string> *pq, ofMutex *pm)
 //    }
     switch_timer = ofGetElapsedTimeMillis();
     call_time = ofGetElapsedTimeMillis();
-
-
 }
 
 // Destructor
 HapPlayerManager::~HapPlayerManager() {
 //todo : stop + close all videos
     for (auto p: players){
-        p.video.stop();
-        p.video.close();
+        p->video.stop();
+        p->video.close();
     }
 }
 
 void HapPlayerManager::loadAllVideos(ofDirectory dir){
    int num_videos = dir.size();
    //DEBUG MODE
-   num_videos = 50;
 
    for (int i = 0; i<num_videos;i++){
        string movieFile = dir.getName(i);

@@ -37,6 +37,8 @@ void ofApp::setup(){
     // videoManager->receiveVideo(rawname);
     //videoManager->update();
     fbo.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA);
+    videoManager->loadAllVideos(dir);
+
 
 //    soundStream.printDeviceList();
 //    soundStream.setDeviceID(6); //Is computer-specific
@@ -46,10 +48,6 @@ void ofApp::setup(){
 
 //--------------------------------------------------------------
 void ofApp::update(){
-    if (FIRST_UPDATE){
-        videoManager->loadAllVideos(dir);
-        FIRST_UPDATE = False;
-    }
     uint64_t mainUpdateTime = ofGetElapsedTimeMillis();
     getMessages();
     if (NEW_VIDEOS){

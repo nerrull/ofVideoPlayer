@@ -1,2 +1,5 @@
 ofxOsc
 ofxGaplessVideo
+ofxHDF5
+ofxHapPlayer
+ofxSoundObjects

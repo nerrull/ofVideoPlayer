@@ -82,6 +82,7 @@ private:
     bool LOADING;
     bool PLAYING;
     bool OVERLAY;
+    bool PLAYERS_INITIALIZED = false;
     int loadIndex;
 
     string getFileName(string );
