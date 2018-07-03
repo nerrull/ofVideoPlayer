@@ -2,7 +2,7 @@
 #define OFXTHREADEDVIDEOPLAYERMANAGER_H
 #include "ofMain.h"
 #include "audiosampleplayer.h"
-#include "ofxHapPlayer.h"
+
 #define MAX_VIDEOS 30
 
 

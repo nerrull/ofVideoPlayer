@@ -16,7 +16,7 @@ public:
     int lastVideoIndex;
 
 
-    HapPlayerManager(deque<string>*, ofMutex*);
+    HapPlayerManager(deque<string>*, ofMutex*, string, string);
     ~HapPlayerManager();
     void receiveVideo(string path);
     void setToPlay(vector<string> toPlay);
@@ -92,7 +92,7 @@ private:
     void _playNextVideo();
     bool LOADING;
     bool PLAYING;
-    bool OVERLAY;
+    bool OVERLAY =false;
     bool PLAYERS_INITIALIZED = false;
     int loadIndex;
 

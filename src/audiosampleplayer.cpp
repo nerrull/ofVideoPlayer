@@ -3,7 +3,7 @@
 AudioSamplePlayer::AudioSamplePlayer()
 {
        mixBuffer = new int16_t[AUDIO_BUFFER_LENGTH];
-       BUFFER_READY= False;
+       BUFFER_READY= false;
        sample_pointer=0;
        last_pointer =-1;
 }

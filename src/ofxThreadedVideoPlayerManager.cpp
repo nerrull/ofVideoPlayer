@@ -8,8 +8,8 @@ ThreadedVideoPlayerManager::ThreadedVideoPlayerManager(deque<string> *pq, ofMute
     videoPath = "/media/rice1902/OuterSpace1/dataStore/VIDEO/mjpeg/";
     samplePlayer.loadHDF5Data(samplePath);
 
-    LOADING=False;
-    PLAYING = False;
+    LOADING=false;
+    PLAYING = false;
 
     for (int i=0; i<8; i++){
         player p;
@@ -41,7 +41,7 @@ void ThreadedVideoPlayerManager::setSpeed(int speed) {
     int last_ms = switch_ms;
     switch_ms = speed;
     if (last_ms <500 &&switch_ms >500){
-        sampler_active =False;
+        sampler_active =false;
         setAllVolumes(1.0);
     }
     else if (last_ms >500 &&switch_ms <500){
@@ -84,7 +84,7 @@ bool ThreadedVideoPlayerManager::loadVideo(string _path){
 
     if (alreadyLoaded(_path)){
        ofLogError(ofToString(ofGetElapsedTimef(),3)) << _path << " already loaded";
-       return True;
+       return true;
     }
 
     if (LOADING){
@@ -95,11 +95,11 @@ bool ThreadedVideoPlayerManager::loadVideo(string _path){
 
     if (nextIndex == -1){
         ofLogError() << "Couldn't find a free video player";
-        return False;
+        return false;
     }
     loadingPlayerPointer =&players[nextIndex];
 
-    LOADING =True;
+    LOADING =true;
 
     ofLogError() << "Started loading " << _path ;
 
@@ -111,7 +111,7 @@ bool ThreadedVideoPlayerManager::loadVideo(string _path){
     loadingPlayerPointer->filePath  = fullpath;
     loadingPlayerPointer->video.loadAsync(fullpath);
     LOADING_TIMER=0;
-    return True;
+    return false;
 }
 
 int ThreadedVideoPlayerManager::getNextPlayerFromIndex(int playerIndex){
@@ -347,10 +347,10 @@ void ThreadedVideoPlayerManager::update(){
 }
 bool ThreadedVideoPlayerManager::draw(int x, int y){
     if (players.size()==0){
-        return False;
+        return false;
     }
     if (!(playingVideoPointer->status ==playing)){
-        return False;
+        return false;
     }
     static bool isDrawing = false;
     int current_pos = playingVideoPointer->video.getCurrentFrame();

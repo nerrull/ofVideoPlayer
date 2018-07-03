@@ -56,8 +56,8 @@ private:
     bool ADD = false;
     bool FBO_DIRTY = true;
     bool NEW_VIDEOS =false;
-    bool FIRST_UPDATE = True;
-    bool PLAY_IMMEDIATELY = False;
+    bool FIRST_UPDATE = true;
+    bool PLAY_IMMEDIATELY = false;
     vector<string> toPlay;
     vector<string> lastToPlay;
     deque<string> playing_queue;

@@ -9,8 +9,6 @@ void ofApp::setup(){
     //ofGetWindowPtr()->setVerticalSync(true);
     ofSetVerticalSync(true);
     ofSetFrameRate(60);
-
-    //htopofSetFrameRate(30);
     ofSetBackgroundAuto(false);
     std::cout << "listening for osc messages on port " << TO_PLAY_PORT << "\n";
     std::cout << "sending osc messages on port " << TO_PLAY_PORT << "\n";
@@ -18,18 +16,18 @@ void ofApp::setup(){
     receiver.setup( TO_PLAY_PORT );
     sender.setup("localhost",PLAYING_FILE_NAME_PORT);
 
-    string video_path = "/media/rice1902/OuterSpace2/dataStore/VIDEO/hap/";
-    string audio_path = "/media/rice1902/OuterSpace2/dataStore/AUDIO/full_audio/";
+    string video_path = "/home/nuc/Documents/dataStore/VIDEO/hap/";
+    string audio_path = "/home/nuc/Documents/dataStore/AUDIO/full_audio/";
 
-    //    string path = "/media/rice1902/Seagate4T/hap_test/";
     ofSetDataPathRoot(video_path);
     dir= ofDirectory(video_path);
     dir.allowExt("mov");
     dir.listDir();
 
-    videoManager = new HapPlayerManager(&playing_queue, &playing_mutex);
+    videoManager = new HapPlayerManager(&playing_queue, &playing_mutex, video_path, audio_path);
     fbo.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA);
     videoManager->loadAllVideos(dir);
+    setSpeed(0);
 }
 
 //--------------------------------------------------------------
@@ -39,12 +37,12 @@ void ofApp::update(){
     if (NEW_VIDEOS){
         if (PLAY_IMMEDIATELY){
             videoManager->playNow(toPlay[0]);
-            PLAY_IMMEDIATELY = False;
+            PLAY_IMMEDIATELY = false;
         }
         else{
             videoManager->readToPlay(toPlay);
         }
-        NEW_VIDEOS = False;
+        NEW_VIDEOS = false;
     }
     videoManager->update();
 
@@ -99,11 +97,11 @@ void ofApp::draw(){
     fbo.draw(0,0);
 
     ofSetColor(255);
-    std::stringstream strm;
-    strm << "FPS: " << ofGetFrameRate()<<endl;
-    strm << "SPEED: " << SPEED<<endl;
-    w = ofGetWidth();
-    ofDrawBitmapString(strm.str(), w-w/4+2, 20);
+//    std::stringstream strm;
+//    strm << "FPS: " << ofGetFrameRate()<<endl;
+//    strm << "SPEED: " << SPEED<<endl;
+//    w = ofGetWidth();
+//    ofDrawBitmapString(strm.str(), w-w/4+2, 20);
     FBO_DIRTY = true;
     drawUpdateTime = ofGetElapsedTimeMillis() -drawUpdateTime;
     // ofLogError()<<"Draw time: "<< drawUpdateTime;
@@ -189,7 +187,7 @@ void ofApp::getMessages() {
                 toPlay.push_back(name);
                 ofLogError()<<"received " <<name;
             }
-            NEW_VIDEOS = True;
+            NEW_VIDEOS = true;
         }
 
         if ( m.getAddress().compare( string("/PLAY_NOW") ) == 0 )
@@ -200,8 +198,8 @@ void ofApp::getMessages() {
             toPlay.clear();
             string name = m.getArgAsString( 0);
             toPlay.push_back(name);
-            NEW_VIDEOS = True;
-            PLAY_IMMEDIATELY = True;
+            NEW_VIDEOS = true;
+            PLAY_IMMEDIATELY = true;
 
         }
 
@@ -261,6 +259,10 @@ void ofApp::keyPressed(int key){
 
     case 'h':
         videoManager->toggleOverlay();
+        break;
+    case '0':
+        setSpeed(0);
+        break;
     }
 }
 

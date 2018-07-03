@@ -1,22 +1,21 @@
 #include "happlayermanager.h"
 
-HapPlayerManager::HapPlayerManager(deque<string> *pq, ofMutex *pm)
+HapPlayerManager::HapPlayerManager(deque<string> *pq, ofMutex *pm, string vp, string ap)
 {
     this->playing_queue= pq;
     this->playing_mutex = pm;
-    videoPath = "/media/rice1902/OuterSpace2/dataStore/VIDEO/hap/";
+    videoPath = vp;
     playingVideoIndex = 0;
     lastVideoIndex =0;
     loadIndex =0;
     LOADING =false;
     PLAYING = false;
-    OVERLAY= true;
+    OVERLAY= false;
 
     switch_timer = ofGetElapsedTimeMillis();
     call_time = ofGetElapsedTimeMillis();
 
-    string audiopath = "/media/rice1902/OuterSpace2/dataStore/AUDIO/full_audio/";
-    samplePlayer.init(audiopath ,300);
+    samplePlayer.init(ap ,-1);
 
 }
 
@@ -29,7 +28,7 @@ HapPlayerManager::~HapPlayerManager() {
 void HapPlayerManager::loadAllVideos(ofDirectory dir){
    int num_videos = dir.size();
    //DEBUG MODE
-   num_videos = 150;
+//   num_videos = 10;
    players.resize(num_videos);
 
    for (int i = 0; i<num_videos;i++){
@@ -71,7 +70,6 @@ void HapPlayerManager::loadAllVideos(ofDirectory dir){
 
 
 void HapPlayerManager::setSpeed(int speed) {
-    int last_ms = switch_ms;
     switch_ms = speed;
 }
 
@@ -157,7 +155,7 @@ void HapPlayerManager::_playNextVideoLoaded(){
 }
 
 void HapPlayerManager::playNow(string toPlay){
-    this->switch_ms =-1;
+    this->switch_timer =0;
     this->toPlay.clear();
     this->toPlay.push_back(toPlay);
 

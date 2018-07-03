@@ -38,7 +38,7 @@ public:
 
     ofxHDF5File hdf5File;
 
-    bool BUFFER_READY=False;
+    bool BUFFER_READY=false;
 
 };
 
