@@ -98,6 +98,7 @@ void ofApp::draw(){
     //        videoManager.draw(0,0 , w, h);
     //    }
     fbo.draw(0,0);
+    FBO_DIRTY = true;
 
     ofSetColor(255);
     if (DEV_MODE){
@@ -106,9 +107,8 @@ void ofApp::draw(){
         strm << "SPEED: " << SPEED<<endl;
         w = ofGetWidth();
         ofDrawBitmapString(strm.str(), w-w/4+2, 20);
-        FBO_DIRTY = true;
-        drawUpdateTime = ofGetElapsedTimeMillis() -drawUpdateTime;
     }
+    drawUpdateTime = ofGetElapsedTimeMillis() -drawUpdateTime;
     // ofLogError()<<"Draw time: "<< drawUpdateTime;
 }
 
@@ -239,7 +239,7 @@ void ofApp::getMessages() {
         }
         else
         {
-            printf( "WOops" );
+            printf( "Received unknown message" );
 
         }
     }

@@ -13,7 +13,7 @@ HapPlayerManager::HapPlayerManager(deque<PlayingInfo> *pq, ofMutex *pm, string v
     switchTimer = ofGetElapsedTimeMillis();
     call_time = ofGetElapsedTimeMillis();
 
-    int num_videos = 20;
+    int num_videos = -1;
     samplePlayer.init(ap ,num_videos);
 
 }
@@ -27,7 +27,8 @@ HapPlayerManager::~HapPlayerManager() {
 void HapPlayerManager::loadAllVideos(ofDirectory dir){
    int num_videos = dir.size();
    //DEBUG MODE
-   num_videos = 20;
+
+//   num_videos = 20;
    players.resize(num_videos);
 
    for (int i = 0; i<num_videos;i++){

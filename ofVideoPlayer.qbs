@@ -25,6 +25,7 @@ Project{
             'src/ofApp.h',
             'src/ofxThreadedVideoPlayerManager.cpp',
             'src/ofxThreadedVideoPlayerManager.h',
+            'bin/data/settings.json'
         ]
 
 //         This project is using addons.make to include the addons
@@ -37,6 +38,8 @@ Project{
              'ofxOsc',
              'ofxSoundObjects',
              'ofxHDF5',
+             'ofxJSON',
+             'ofxJsonSettings'
          ]
 
         // additional flags for the project. the of module sets some
