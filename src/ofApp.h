@@ -5,12 +5,13 @@
 #include "ofxOsc.h"
 #include "imageloader.h"
 #include "happlayermanager.h"
-// listen on port 12345
-#define TO_PLAY_PORT 33333
-#define PLAYING_FILE_NAME_PORT 44445
 
+
+// listen on port 33333
+#define TO_PLAY_PORT 33333
+//Publish on port 44445
+#define PLAYING_FILE_NAME_PORT 44445
 #define NUM_MSG_STRINGS 20
-#define DEV_MODE 1
 
 class ofApp : public ofBaseApp{
 
@@ -34,6 +35,7 @@ public:
 
 
 private:
+
     ofxOscReceiver receiver;
     ofxOscSender sender;
     HapPlayerManager* videoManager;
@@ -42,7 +44,6 @@ private:
 
     ofTexture t;
     ofFbo fbo;
-    //ofSoundStream soundStream;
 
     std::string		msg_strings[NUM_MSG_STRINGS];
     string		next_video;
@@ -58,9 +59,12 @@ private:
     bool NEW_VIDEOS =false;
     bool FIRST_UPDATE = true;
     bool PLAY_IMMEDIATELY = false;
+    bool DEV_MODE;
+
+
     vector<string> toPlay;
     vector<string> lastToPlay;
-    deque<string> playing_queue;
+    deque<HapPlayerManager::PlayingInfo> playingQueue;
     ofMutex playing_mutex;
     ofDirectory dir;
 
@@ -71,7 +75,7 @@ private:
     void getMessages();
     void seekInVideo();
     void addVideo();
-    bool getPlayingFile(string& filename);
+    bool getPlayingFileInfo(string& ,int &);
     void sendPlayingFile();
     void setSpeed(int speedIndex);
 

@@ -25,6 +25,8 @@ Project{
             'src/ofApp.h',
             'src/ofxThreadedVideoPlayerManager.cpp',
             'src/ofxThreadedVideoPlayerManager.h',
+            "bin/data/settings.json"
+
         ]
 
         of.addons: [
@@ -32,7 +34,9 @@ Project{
             'ofxGaplessVideo',
             'ofxHDF5',
             'ofxHapPlayer',
-            'ofxSoundObjects'
+            'ofxSoundObjects',
+            'ofxJSON',
+            'ofxJsonSettings'
         ]
 
         // additional flags for the project. the of module sets some

@@ -11,12 +11,16 @@
 class HapPlayerManager:public ofThread{
 
 public:
+    struct PlayingInfo{
+        PlayingInfo(string s, int d){
+            durationMs = d;
+            fileName =s;
+        }
+        int durationMs;
+        string fileName;
+    };
 
-    int playingVideoIndex;
-    int lastVideoIndex;
-
-
-    HapPlayerManager(deque<string>*, ofMutex*, string, string);
+    HapPlayerManager(deque<PlayingInfo>*, ofMutex*, string, string);
     ~HapPlayerManager();
     void receiveVideo(string path);
     void setToPlay(vector<string> toPlay);
@@ -34,7 +38,8 @@ public:
     void toggleOverlay();
     void playNow(string toPlay);
 
-
+    int playingVideoIndex;
+    int lastVideoIndex;
 
 private:
     /* Fades */
@@ -71,8 +76,8 @@ private:
         string path;
         bool fade;
     };
-    deque<string>* playing_queue;
-    ofMutex* playing_mutex;
+    deque<PlayingInfo>* playingQueue;
+    ofMutex* playingMutex;
 
     deque<command> queue;
     vector<string> toPlay;
@@ -85,17 +90,18 @@ private:
     SimpleSamplePlayer samplePlayer;
 
     string videoPath;
-    uint64_t switch_timer;
+    uint64_t switchTimer;
     int switch_ms=330;
+
+    int loadIndex;
+    uint64_t call_time;
+    int internal_counter = 0;
+
+    bool OVERLAY =false;
+    bool PLAYERS_INITIALIZED = false;
 
     bool alreadyLoaded(string _path);
     void _playNextVideo();
-    bool LOADING;
-    bool PLAYING;
-    bool OVERLAY =false;
-    bool PLAYERS_INITIALIZED = false;
-    int loadIndex;
-
     string getFileName(string );
     bool loadVideo(string _path);
 
@@ -107,9 +113,6 @@ private:
     void addVideoPlayer(string _path, bool load_async );
     void _playNextVideoLoaded();
 
-
-    uint64_t call_time;
-    int internal_counter = 0;
 
 
 

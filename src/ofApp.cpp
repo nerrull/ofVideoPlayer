@@ -1,5 +1,5 @@
 #include "ofApp.h"
-
+#include "ofxJsonSettings.h"
 
 
 //--------------------------------------------------------------
@@ -16,15 +16,18 @@ void ofApp::setup(){
     receiver.setup( TO_PLAY_PORT );
     sender.setup("localhost",PLAYING_FILE_NAME_PORT);
 
-    string video_path = "/home/nuc/Documents/dataStore/VIDEO/hap/";
-    string audio_path = "/home/nuc/Documents/dataStore/AUDIO/full_audio/";
+    Settings::get().load("settings.json");
+
+    string video_path = Settings::getString("video_path");
+    string audio_path =  Settings::getString("audio_path");
+    DEV_MODE = Settings::getBool("dev_mode");
 
     ofSetDataPathRoot(video_path);
     dir= ofDirectory(video_path);
     dir.allowExt("mov");
     dir.listDir();
 
-    videoManager = new HapPlayerManager(&playing_queue, &playing_mutex, video_path, audio_path);
+    videoManager = new HapPlayerManager(&playingQueue, &playing_mutex, video_path, audio_path);
     fbo.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA);
     videoManager->loadAllVideos(dir);
     setSpeed(0);
@@ -58,7 +61,7 @@ void ofApp::update(){
         FBO_DIRTY = false;
     }
 
-    if (playing_queue.size()>0){
+    if (playingQueue.size()>0){
         sendPlayingFile();
     }
     mainUpdateTime = ofGetElapsedTimeMillis() -mainUpdateTime;
@@ -97,38 +100,45 @@ void ofApp::draw(){
     fbo.draw(0,0);
 
     ofSetColor(255);
-//    std::stringstream strm;
-//    strm << "FPS: " << ofGetFrameRate()<<endl;
-//    strm << "SPEED: " << SPEED<<endl;
-//    w = ofGetWidth();
-//    ofDrawBitmapString(strm.str(), w-w/4+2, 20);
-    FBO_DIRTY = true;
-    drawUpdateTime = ofGetElapsedTimeMillis() -drawUpdateTime;
+    if (DEV_MODE){
+        std::stringstream strm;
+        strm << "FPS: " << ofGetFrameRate()<<endl;
+        strm << "SPEED: " << SPEED<<endl;
+        w = ofGetWidth();
+        ofDrawBitmapString(strm.str(), w-w/4+2, 20);
+        FBO_DIRTY = true;
+        drawUpdateTime = ofGetElapsedTimeMillis() -drawUpdateTime;
+    }
     // ofLogError()<<"Draw time: "<< drawUpdateTime;
 }
 
-bool ofApp::getPlayingFile(string& filename){
+bool ofApp::getPlayingFileInfo(string& filename, int& length){
     std::unique_lock<std::mutex> lock(playing_mutex, std::try_to_lock);
     if(!lock.owns_lock()){
         ofLogError(ofToString(ofGetElapsedTimef(),3)) << "Couldn't update playing video";
         return false;
     }
-    filename = playing_queue.front();
-    playing_queue.clear();
+    HapPlayerManager::PlayingInfo pi = playingQueue.front();
+    filename = pi.fileName;
+    length = pi.durationMs;
+    playingQueue.clear();
     return true;
 
 }
 
 void ofApp::sendPlayingFile(){
     string name;
-    if (!getPlayingFile(name)){
+    int duration;
+    if (!getPlayingFileInfo(name, duration)){
         return;
     }
     ofxOscMessage m;
     m.setAddress("/PLAYING_VIDEO");
     m.addStringArg(name);
+    m.addInt64Arg(duration);
     sender.sendMessage(m);
 }
+
 void ofApp::setSpeed(int speedIndex){
     switch (speedIndex){
     //full length
