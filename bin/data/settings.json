@@ -1,0 +1,9 @@
+{
+    "monitor_index": 0,
+    "audio_path": "/media/rice1902/OuterSpace2/dataStore/AUDIO/full_audio/",
+    "video_path": "/media/rice1902/OuterSpace2/dataStore/VIDEO/hap/",
+    "audio_device_id": 6,
+    "windowed":true,
+    "dev_mode":true,
+    "english":false
+}
