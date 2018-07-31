@@ -140,36 +140,7 @@ void ofApp::sendPlayingFile(){
 }
 
 void ofApp::setSpeed(int speedIndex){
-    switch (speedIndex){
-    //full length
-    case 0:
-        SPEED =-1;
-        break;
-    case 1:
-        SPEED =4000;
-        break;
-    case 2:
-        SPEED =2000;
-        break;
-    case 3:
-        SPEED =1000;
-        break;
-    case 4:
-        SPEED =500;
-        break;
-    case 5:
-        SPEED =250;
-        break;
-    case 6:
-        SPEED =100;
-        break;
-    case 7:
-        SPEED =66;
-        break;
-    case 8:
-        SPEED =33;
-        break;
-    }
+    SPEED =SPEEDS[speedIndex];
     videoManager->setSpeed(SPEED);
 
 
