@@ -204,6 +204,7 @@ void ofApp::keyPressed(int key){
         break;
 
     case 'h':
+        OVERLAY = !OVERLAY;
         videoManager->toggleOverlay();
         break;
     case '0':
