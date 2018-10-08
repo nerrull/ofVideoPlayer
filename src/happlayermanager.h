@@ -3,11 +3,9 @@
 #define HAPPLAYERMANAGER_H
 
 #include "ofMain.h"
-#include "audiosampleplayer.h"
 #include "ofxHapPlayer.h"
 #include "simplesampleplayer.h"
-#define MAX_VIDEOS 8
-
+#include "databaseloader.h"
 class HapPlayerManager:public ofThread{
 
 public:
@@ -23,14 +21,15 @@ public:
 
 
 
-    HapPlayerManager(deque<PlayingInfo>*, ofMutex*, string, string);
+    HapPlayerManager(deque<PlayingInfo>*, ofMutex*, DatabaseLoader* );
     ~HapPlayerManager();
     void receiveVideo(string path);
     void setToPlay(vector<string> toPlay);
     void readToPlay(vector<string>toPlay);
 
     void setSpeed(int speed);
-    void loadAllVideos(ofDirectory dir);
+    void loadAllVideos(ofDirectory dir, int n);
+    void loadVideoPaths(vector<string> paths, int n);
     void update();
     bool draw(int x, int y);
 
@@ -89,7 +88,6 @@ private:
     vector<int> toPlayVideoIndexes;
     int toPlayVideoIndex =0;
 
-//    AudioSamplePlayer samplePlayer;
     SimpleSamplePlayer samplePlayer;
 
     string videoPath;
@@ -102,6 +100,7 @@ private:
 
     bool OVERLAY =false;
     bool PLAYERS_INITIALIZED = false;
+    bool DEV_MODE = false;
 
     bool alreadyLoaded(string _path);
     void _playNextVideo();

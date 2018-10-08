@@ -15,8 +15,8 @@ public:
     void playFromIndex(int i);
 
     void playFile(string sample_name, int start_frame);
-    void init (vector<string> paths, int num_files);
-    void loop(int index);
+    void init (string path, int num_files);
+
     //ofxSoundMixer mixer;
     ofxTwoChannelFader fader;
 

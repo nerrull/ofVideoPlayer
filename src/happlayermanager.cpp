@@ -1,10 +1,10 @@
 #include "happlayermanager.h"
+#include "ofxJsonSettings.h"
 
-HapPlayerManager::HapPlayerManager(deque<PlayingInfo> *pq, ofMutex *pm, string vp, string ap)
+HapPlayerManager::HapPlayerManager(deque<PlayingInfo> *pq, ofMutex *pm,  DatabaseLoader *dbl)
 {
     this->playingQueue= pq;
     this->playingMutex = pm;
-    videoPath = vp;
     playingVideoIndex = 0;
     lastVideoIndex =0;
     loadIndex =0;
@@ -13,9 +13,22 @@ HapPlayerManager::HapPlayerManager(deque<PlayingInfo> *pq, ofMutex *pm, string v
     switchTimer = ofGetElapsedTimeMillis();
     call_time = ofGetElapsedTimeMillis();
 
-    int num_videos = -1;
-    samplePlayer.init(ap ,num_videos);
+    DEV_MODE = Settings::getBool("dev_mode");
+    OVERLAY = Settings::getBool("overlay");
+    videoPath = Settings::getString("video_path");
 
+
+    int num_videos = -1;
+
+    if (DEV_MODE){
+         //DEBUG MODE
+         num_videos = 20;
+    }
+
+    loadVideoPaths(dbl->getVideoPaths(), num_videos);
+    samplePlayer.init(dbl->getAudioPaths(), num_videos);
+
+    playNow(dbl->getVideoPaths()[0]);
 }
 
 // Destructor
@@ -24,15 +37,55 @@ HapPlayerManager::~HapPlayerManager() {
 
 }
 
-void HapPlayerManager::loadAllVideos(ofDirectory dir){
-   int num_videos = dir.size();
-   //DEBUG MODE
-   //num_videos = 20;
+void HapPlayerManager::loadAllVideos(ofDirectory dir, int num_videos){
+    if (num_videos==-1){
+        num_videos = dir.size();
+    }
 
    players.resize(num_videos);
-
    for (int i = 0; i<num_videos;i++){
        string movieFile = dir.getName(i);
+
+       size_t lastindex = movieFile.find_last_of(".");
+       string rawname = movieFile.substr(0, lastindex);
+       string fullpath =videoPath + movieFile;
+       ofLogError(ofToString(ofGetElapsedTimef(),3)) << "[Loading] " << fullpath;
+
+       players[i].status  = loading;
+       players[i].loadTime = ofGetElapsedTimeMillis();
+       players[i].video.setLoopState(OF_LOOP_NORMAL);
+       players[i].videoID  = rawname;
+       players[i].filePath  = fullpath;
+
+       players[i].video.load(fullpath);
+       players[i].loadTime = ofGetElapsedTimeMillis()-players[i].loadTime;
+       players[i].video.play();
+
+       ofFbo loadFbo;
+       loadFbo.begin();
+       while(players[i].video.getPosition()*players[i].video.getDuration() < 0.05 )
+       {
+           ofEventArgs e;
+           players[i].video.update(e);
+           players[i].video.draw(0,0);
+           ofSleepMillis(10);
+//            players[i].video.nextFrame();
+       }
+       loadFbo.end();
+       players[i].video.setPaused(true);
+       toPlayVideoIndexes.push_back(i);
+   }
+}
+
+
+void HapPlayerManager::loadVideoPaths(vector<string> filepaths, int num_videos){
+   if (num_videos==-1){
+        num_videos = filepaths.size();
+   }
+
+   players.resize(num_videos);
+   for (int i = 0; i<num_videos;i++){
+       string movieFile = filepaths[i];
 
        size_t lastindex = movieFile.find_last_of(".");
        string rawname = movieFile.substr(0, lastindex);
@@ -67,8 +120,6 @@ void HapPlayerManager::loadAllVideos(ofDirectory dir){
    }
 }
 
-
-
 void HapPlayerManager::setSpeed(int speed) {
     switch_ms = speed;
 }
@@ -93,7 +144,6 @@ string HapPlayerManager::getFileName(string s){
     std::string file = s.substr(botDirPos+1, s.length());
     return file;
 }
-
 
 void HapPlayerManager::readToPlay(vector<string>toPlay){\
     string toPlayId;
@@ -165,7 +215,6 @@ void HapPlayerManager::playNow(string toPlay){
             toPlayVideoIndexes.push_back(vIndex);
         }
     }
-
     this->_playNextVideoLoaded();
 }
 
@@ -173,16 +222,13 @@ void HapPlayerManager::toggleOverlay(){
     OVERLAY =!OVERLAY;
 }
 
-
 void HapPlayerManager::update(){
     //ofLogError()<<"Call time : " <<ofGetElapsedTimeMillis() - call_time;
     //uint64_t update_time = ofGetElapsedTimeMillis();
 
-    if (players[playingVideoIndex].video.getPosition()*players[playingVideoIndex].video.getDuration() >players[playingVideoIndex].video.getDuration() -1. ){
-        PlayingInfo pi(players[playingVideoIndex].videoID, players[playingVideoIndex].video.getDuration()*1000. );
-        pi.isLoop = true;
-        playingQueue->push_front(pi);
-
+    //Loop the video
+    if (players[playingVideoIndex].video.getPosition()*players[playingVideoIndex].video.getDuration() >= (players[playingVideoIndex].video.getDuration()-1.)  ){
+        playNow(players[playingVideoIndex].videoID);
     }
 }
 bool HapPlayerManager::draw(int x, int y){

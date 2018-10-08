@@ -1,11 +1,9 @@
 #pragma once
 
 #include "ofMain.h"
-#include "ofxThreadedVideoPlayerManager.h"
 #include "ofxOsc.h"
-#include "imageloader.h"
 #include "happlayermanager.h"
-
+#include "databaseloader.h"
 
 // listen on port 33333
 #define TO_PLAY_PORT 33333
@@ -39,8 +37,8 @@ private:
     ofxOscReceiver receiver;
     ofxOscSender sender;
     HapPlayerManager* videoManager;
+    DatabaseLoader dbl;
     //ThreadedVideoPlayerManager* videoManager;
-
 
     ofFbo fbo;
 
@@ -57,7 +55,7 @@ private:
     bool NEW_VIDEOS =false;
     bool FIRST_UPDATE = true;
     bool PLAY_IMMEDIATELY = false;
-    bool DEV_MODE;
+    bool OVERLAY;
 
 
     vector<string> toPlay;
@@ -73,7 +71,7 @@ private:
     void getMessages();
     void seekInVideo();
     void addVideo();
-    bool getPlayingFileInfo(string& ,int &);
+    bool getPlayingFileInfo(string& ,int &, bool&);
     void sendPlayingFile();
     void setSpeed(int speedIndex);
 

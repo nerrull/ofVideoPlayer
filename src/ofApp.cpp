@@ -19,17 +19,16 @@ void ofApp::setup(){
     Settings::get().load("settings.json");
 
     string video_path = Settings::getString("video_path");
+    string db_path = Settings::getString("db_path");
+
     string audio_path =  Settings::getString("audio_path");
-    DEV_MODE = Settings::getBool("dev_mode");
+    OVERLAY = Settings::getBool("overlay");
 
-    ofSetDataPathRoot(video_path);
-    dir= ofDirectory(video_path);
-    dir.allowExt("mov");
-    dir.listDir();
 
-    videoManager = new HapPlayerManager(&playingQueue, &playing_mutex, video_path, audio_path);
+    dbl.loadVideoPaths(db_path,video_path, audio_path);
+
+    videoManager = new HapPlayerManager(&playingQueue, &playing_mutex, &dbl);
     fbo.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA);
-    videoManager->loadAllVideos(dir);
     setSpeed(0);
 }
 
@@ -75,13 +74,14 @@ void ofApp::draw(){
     FBO_DIRTY = true;
 
     ofSetColor(255);
-    if (DEV_MODE){
+    if (OVERLAY){
         std::stringstream strm;
         strm << "FPS: " << ofGetFrameRate()<<endl;
         strm << "SPEED: " << SPEED<<endl;
         w = ofGetWidth();
         ofDrawBitmapString(strm.str(), w-w/4+2, 20);
     }
+
     drawUpdateTime = ofGetElapsedTimeMillis() -drawUpdateTime;
     // ofLogError()<<"Draw time: "<< drawUpdateTime;
 }
@@ -95,7 +95,7 @@ bool ofApp::getPlayingFileInfo(string& filename, int& length, bool& isLoop){
     HapPlayerManager::PlayingInfo pi = playingQueue.front();
     filename = pi.fileName;
     length = pi.durationMs;
-    isloop = pi.isLoop;
+    isLoop = pi.isLoop;
     playingQueue.clear();
     return true;
 
@@ -105,7 +105,7 @@ void ofApp::sendPlayingFile(){
     string name;
     int duration;
     bool isLoop;
-    if (!getPlayingFileInfo(name, duration)){
+    if (!getPlayingFileInfo(name, duration, isLoop)){
         return;
     }
     ofxOscMessage m;
