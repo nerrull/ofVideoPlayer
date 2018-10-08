@@ -16,9 +16,12 @@ public:
             durationMs = d;
             fileName =s;
         }
+        bool isLoop = false;
         int durationMs;
         string fileName;
     };
+
+
 
     HapPlayerManager(deque<PlayingInfo>*, ofMutex*, string, string);
     ~HapPlayerManager();

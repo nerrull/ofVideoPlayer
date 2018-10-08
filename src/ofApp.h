@@ -42,7 +42,6 @@ private:
     //ThreadedVideoPlayerManager* videoManager;
 
 
-    ofTexture t;
     ofFbo fbo;
 
     std::string		msg_strings[NUM_MSG_STRINGS];
@@ -53,7 +52,6 @@ private:
     int SPEED = 33*10;
     int count =0;
     bool SEEK = false;
-    bool USE_FRAMES = false;
     bool ADD = false;
     bool FBO_DIRTY = true;
     bool NEW_VIDEOS =false;

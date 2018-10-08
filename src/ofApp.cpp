@@ -47,41 +47,22 @@ void ofApp::update(){
         }
         NEW_VIDEOS = false;
     }
+
     videoManager->update();
 
     if (FBO_DIRTY){
         fbo.begin();
-        if (USE_FRAMES){
-            t.draw(0,0);
-        }
-        else{
-            videoManager->draw(0,0);
-        }
+        videoManager->draw(0,0);
         fbo.end();
         FBO_DIRTY = false;
     }
 
-    if (playingQueue.size()>0){
+    if (playingQueue.size() >0){
         sendPlayingFile();
     }
+
     mainUpdateTime = ofGetElapsedTimeMillis() -mainUpdateTime;
     //ofLogError()<<"Main update time: "<< mainUpdateTime;
-}
-
-
-void ofApp::addVideo() {
-    static int lastMod = ofGetElapsedTimeMillis();
-    static int moviecount = 0;
-    if (ofGetElapsedTimeMillis() - lastMod > 50) {
-        //moviecount=rand()%dir.size();
-        moviecount = (moviecount+1)%dir.size();
-        movieFile = dir.getName(moviecount);
-        size_t lastindex = movieFile.find_last_of(".");
-        string rawname = movieFile.substr(0, lastindex);
-        ofLogError(ofToString(ofGetElapsedTimef(),3)) << "Append called from main loop " <<moviecount << " -" << rawname ;
-        videoManager->receiveVideo(rawname);
-        lastMod = ofGetElapsedTimeMillis();
-    }
 }
 
 
@@ -90,13 +71,6 @@ void ofApp::draw(){
     uint64_t drawUpdateTime = ofGetElapsedTimeMillis();
     float w = videoManager->getWidth();
     float h = videoManager->getHeight();
-    //    if (USE_FRAMES){
-
-    //        t.draw(0,0);
-    //    }
-    //    else{
-    //        videoManager.draw(0,0 , w, h);
-    //    }
     fbo.draw(0,0);
     FBO_DIRTY = true;
 
@@ -112,7 +86,7 @@ void ofApp::draw(){
     // ofLogError()<<"Draw time: "<< drawUpdateTime;
 }
 
-bool ofApp::getPlayingFileInfo(string& filename, int& length){
+bool ofApp::getPlayingFileInfo(string& filename, int& length, bool& isLoop){
     std::unique_lock<std::mutex> lock(playing_mutex, std::try_to_lock);
     if(!lock.owns_lock()){
         ofLogError(ofToString(ofGetElapsedTimef(),3)) << "Couldn't update playing video";
@@ -121,6 +95,7 @@ bool ofApp::getPlayingFileInfo(string& filename, int& length){
     HapPlayerManager::PlayingInfo pi = playingQueue.front();
     filename = pi.fileName;
     length = pi.durationMs;
+    isloop = pi.isLoop;
     playingQueue.clear();
     return true;
 
@@ -129,6 +104,7 @@ bool ofApp::getPlayingFileInfo(string& filename, int& length){
 void ofApp::sendPlayingFile(){
     string name;
     int duration;
+    bool isLoop;
     if (!getPlayingFileInfo(name, duration)){
         return;
     }
@@ -136,14 +112,13 @@ void ofApp::sendPlayingFile(){
     m.setAddress("/PLAYING_VIDEO");
     m.addStringArg(name);
     m.addInt64Arg(duration);
+    m.addBoolArg(isLoop);
     sender.sendMessage(m);
 }
 
 void ofApp::setSpeed(int speedIndex){
     SPEED =SPEEDS[speedIndex];
     videoManager->setSpeed(SPEED);
-
-
 }
 
 void ofApp::getMessages() {
@@ -181,15 +156,7 @@ void ofApp::getMessages() {
             toPlay.push_back(name);
             NEW_VIDEOS = true;
             PLAY_IMMEDIATELY = true;
-
         }
-
-        if ( m.getAddress().compare( string("/SET_SPEED") ) == 0 )
-        {
-            setSpeed(m.getArgAsInt32(0));
-
-        }
-
 
         // check for mouse button message
         else if ( m.getAddress().compare( string("/FILE") ) == 0 )
@@ -205,8 +172,6 @@ void ofApp::getMessages() {
 
             ofLogError(ofToString(ofGetElapsedTimef(),3)) << "Video received : " << next_video ;
             ofLogError(ofToString(ofGetElapsedTimef(),3)) << "Current video : " << movieFile ;
-
-
         }
         else
         {

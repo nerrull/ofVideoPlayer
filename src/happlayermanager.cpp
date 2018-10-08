@@ -27,8 +27,8 @@ HapPlayerManager::~HapPlayerManager() {
 void HapPlayerManager::loadAllVideos(ofDirectory dir){
    int num_videos = dir.size();
    //DEBUG MODE
+   //num_videos = 20;
 
-//   num_videos = 20;
    players.resize(num_videos);
 
    for (int i = 0; i<num_videos;i++){
@@ -177,18 +177,12 @@ void HapPlayerManager::toggleOverlay(){
 void HapPlayerManager::update(){
     //ofLogError()<<"Call time : " <<ofGetElapsedTimeMillis() - call_time;
     //uint64_t update_time = ofGetElapsedTimeMillis();
-//    for (auto p : players){
-//        p->video.update();
-//    }
 
     if (players[playingVideoIndex].video.getPosition()*players[playingVideoIndex].video.getDuration() >players[playingVideoIndex].video.getDuration() -1. ){
-        _playNextVideoLoaded();
-        switchTimer = ofGetElapsedTimeMillis();
-    }
+        PlayingInfo pi(players[playingVideoIndex].videoID, players[playingVideoIndex].video.getDuration()*1000. );
+        pi.isLoop = true;
+        playingQueue->push_front(pi);
 
-    else if (ofGetElapsedTimeMillis() - switchTimer > switch_ms && switch_ms >-1) {
-        _playNextVideoLoaded();
-        switchTimer = ofGetElapsedTimeMillis();
     }
 }
 bool HapPlayerManager::draw(int x, int y){
@@ -196,7 +190,7 @@ bool HapPlayerManager::draw(int x, int y){
     static bool isDrawing = false;
     int volumeSteps =1;
     ofPushStyle();
-
+    ofSetColor(255);
     players[playingVideoIndex].video.draw(x, y);
     ofDisableBlendMode();
     ofPopStyle();
@@ -216,8 +210,6 @@ bool HapPlayerManager::draw(int x, int y){
     float total_pos =  players[playingVideoIndex].video.getDuration();
 
     ostringstream os;
-    os << "Queue size"  << queue.size()<< endl;
-
     os << "Current video"  << endl;
     os << "Index    : " << playingVideoIndex << endl;
     os << "Load    : " << players[playingVideoIndex].loadTime << endl;
@@ -242,7 +234,6 @@ bool HapPlayerManager::draw(int x, int y){
 //        os << "Position   : " << players[i]->video.getPosition() << "/" << players[i]->video.getDuration() << endl << "------------------" << endl;
 
 //    }
-
 
     ofDrawBitmapString(os.str(), w-w/4+2, 50);
     ofPopStyle();
