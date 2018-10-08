@@ -12,21 +12,16 @@ Project{
         name: { return FileInfo.baseName(path) }
 
         files: [
-            "src/audiosampleplayer.cpp",
-            "src/audiosampleplayer.h",
-            "src/happlayermanager.cpp",
-            "src/happlayermanager.h",
-            "src/imageloader.cpp",
-            "src/imageloader.h",
             "src/simplesampleplayer.cpp",
             "src/simplesampleplayer.h",
+            "src/databaseloader.cpp",
+            "src/databaseloader.h",
+            "src/happlayermanager.cpp",
+            "src/happlayermanager.h",
             'src/main.cpp',
             'src/ofApp.cpp',
             'src/ofApp.h',
-            'src/ofxThreadedVideoPlayerManager.cpp',
-            'src/ofxThreadedVideoPlayerManager.h',
-            "bin/data/settings.json"
-
+            "bin/data/settings.json",
         ]
 
         of.addons: [

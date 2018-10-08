@@ -1,8 +1,12 @@
 {
+    "audio_path": "/media/rice1902/OuterSpace2/dataStore/AUDIO/full_audio/",
+    "video_path": "/media/rice1902/OuterSpace2/dataStore/VIDEO/hap/",
+    "db_path": "/media/rice1902/OuterSpace2/dataStore/database.h5",
+
     "monitor_index": 1,
-    "audio_path": "/home/nuc/Documents/dataStore/AUDIO/full_audio/",
-    "video_path": "/home/nuc/Documents/dataStore/VIDEO/hap/",
-    "audio_device_id": 7,
+    "audio_device_id": 6,
     "windowed":false,
-    "dev_mode":false
+    "dev_mode":true,
+    "overlay":true
+
 }
