@@ -71,7 +71,7 @@ private:
     void getMessages();
     void seekInVideo();
     void addVideo();
-    bool getPlayingFileInfo(string& ,int &, bool&);
+    bool getPlayingFileInfo(string& ,float &, bool&);
     void sendPlayingFile();
     void setSpeed(int speedIndex);
 

@@ -10,12 +10,13 @@ class HapPlayerManager:public ofThread{
 
 public:
     struct PlayingInfo{
-        PlayingInfo(string s, int d){
-            durationMs = d;
+        PlayingInfo(string s, float d){
+            durationS = d;
             fileName =s;
+            isLoop = false;
         }
-        bool isLoop = false;
-        int durationMs;
+        bool isLoop;
+        float durationS;
         string fileName;
     };
 

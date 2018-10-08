@@ -198,7 +198,7 @@ void HapPlayerManager::_playNextVideoLoaded(){
         ofLogError(ofToString(ofGetElapsedTimef(),3)) << "Couldn't update playing video";
         return;
     }
-    PlayingInfo pi(players[playingVideoIndex].videoID, players[playingVideoIndex].video.getDuration()*1000. );
+    PlayingInfo pi(players[playingVideoIndex].videoID, players[playingVideoIndex].video.getDuration() -1. );
 
     playingQueue->push_front(pi);
 
@@ -280,7 +280,6 @@ bool HapPlayerManager::draw(int x, int y){
 //        os << "Position   : " << players[i]->video.getPosition() << "/" << players[i]->video.getDuration() << endl << "------------------" << endl;
 
 //    }
-
     ofDrawBitmapString(os.str(), w-w/4+2, 50);
     ofPopStyle();
 

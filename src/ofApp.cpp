@@ -86,7 +86,7 @@ void ofApp::draw(){
     // ofLogError()<<"Draw time: "<< drawUpdateTime;
 }
 
-bool ofApp::getPlayingFileInfo(string& filename, int& length, bool& isLoop){
+bool ofApp::getPlayingFileInfo(string& filename, float& length, bool& isLoop){
     std::unique_lock<std::mutex> lock(playing_mutex, std::try_to_lock);
     if(!lock.owns_lock()){
         ofLogError(ofToString(ofGetElapsedTimef(),3)) << "Couldn't update playing video";
@@ -94,7 +94,7 @@ bool ofApp::getPlayingFileInfo(string& filename, int& length, bool& isLoop){
     }
     HapPlayerManager::PlayingInfo pi = playingQueue.front();
     filename = pi.fileName;
-    length = pi.durationMs;
+    length = pi.durationS;
     isLoop = pi.isLoop;
     playingQueue.clear();
     return true;
@@ -103,7 +103,7 @@ bool ofApp::getPlayingFileInfo(string& filename, int& length, bool& isLoop){
 
 void ofApp::sendPlayingFile(){
     string name;
-    int duration;
+    float duration;
     bool isLoop;
     if (!getPlayingFileInfo(name, duration, isLoop)){
         return;
