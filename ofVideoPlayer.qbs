@@ -12,19 +12,15 @@ Project{
         name: { return FileInfo.baseName(sourceDirectory) }
 
         files: [
-            "src/audiosampleplayer.cpp",
-            "src/audiosampleplayer.h",
             "src/happlayermanager.cpp",
             "src/happlayermanager.h",
-            "src/imageloader.cpp",
-            "src/imageloader.h",
             "src/simplesampleplayer.cpp",
             "src/simplesampleplayer.h",
             'src/main.cpp',
             'src/ofApp.cpp',
             'src/ofApp.h',
-            'src/ofxThreadedVideoPlayerManager.cpp',
-            'src/ofxThreadedVideoPlayerManager.h',
+            'src/databaseloader.h',
+            'src/databaseloader.cpp',
             'bin/data/settings.json'
         ]
 
