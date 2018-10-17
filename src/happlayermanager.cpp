@@ -22,7 +22,7 @@ HapPlayerManager::HapPlayerManager(deque<PlayingInfo> *pq, ofMutex *pm,  Databas
 
     if (DEV_MODE){
          //DEBUG MODE
-         num_videos = 20;
+         num_videos = Settings::getInt("n_dev_videos");;
     }
 
     loadVideoPaths(dbl->getVideoPaths(), num_videos);
@@ -49,7 +49,7 @@ void HapPlayerManager::loadAllVideos(ofDirectory dir, int num_videos){
        size_t lastindex = movieFile.find_last_of(".");
        string rawname = movieFile.substr(0, lastindex);
        string fullpath =videoPath + movieFile;
-       ofLogError(ofToString(ofGetElapsedTimef(),3)) << "[Loading] " << fullpath;
+       ofLogNotice(ofToString(ofGetElapsedTimef(),3)) << "[Loading " <<i <<"/"<<num_videos <<"] " << fullpath;
 
        players[i].status  = loading;
        players[i].loadTime = ofGetElapsedTimeMillis();
@@ -92,7 +92,7 @@ void HapPlayerManager::loadVideoPaths(vector<string> filepaths, int num_videos){
 
        string fullpath =videoPath + movieFile;
 
-       ofLogError(ofToString(ofGetElapsedTimef(),3)) << "[Loading] " << fullpath;
+       ofLogNotice(ofToString(ofGetElapsedTimef(),3)) << "Loading [" <<i <<"/"<<num_videos <<"] " << fullpath;
 
        players[i].status  = loading;
        players[i].loadTime = ofGetElapsedTimeMillis();
@@ -214,12 +214,22 @@ void HapPlayerManager::playNow(string toPlay){
         if (strcmp(toPlay.c_str(), players[vIndex].videoID.c_str()) ==0){
             toPlayVideoIndexes.push_back(vIndex);
         }
+
+    }
+    if (toPlayVideoIndexes.size()==0){
+        toPlayVideoIndexes.push_back(0);
     }
     this->_playNextVideoLoaded();
 }
 
 void HapPlayerManager::toggleOverlay(){
     OVERLAY =!OVERLAY;
+}
+
+void HapPlayerManager::playRandom(){
+    int index=  int(ofRandom(players.size()));
+    toPlayVideoIndexes.push_back(index);
+    this->_playNextVideoLoaded();
 }
 
 void HapPlayerManager::update(){

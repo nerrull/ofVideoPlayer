@@ -56,15 +56,16 @@ private:
     bool FIRST_UPDATE = true;
     bool PLAY_IMMEDIATELY = false;
     bool OVERLAY;
-
+    bool DEBUG_MODE;
 
     vector<string> toPlay;
     vector<string> lastToPlay;
     deque<HapPlayerManager::PlayingInfo> playingQueue;
     ofMutex playing_mutex;
     ofDirectory dir;
-
-
+    float debugTimer;
+    float randomTime;
+    float currentTime;
 
     //void audioOut(ofSoundBuffer & buffer);
     void cycleVideos();

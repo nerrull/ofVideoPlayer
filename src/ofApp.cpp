@@ -17,24 +17,30 @@ void ofApp::setup(){
     sender.setup("localhost",PLAYING_FILE_NAME_PORT);
 
     Settings::get().load("settings.json");
-
     string video_path = Settings::getString("video_path");
     string db_path = Settings::getString("db_path");
-
     string audio_path =  Settings::getString("audio_path");
+    DEBUG_MODE=  Settings::getBool("debug_mode");
     OVERLAY = Settings::getBool("overlay");
 
-
+    debugTimer = 1.;
+    randomTime = 0.;
     dbl.loadVideoPaths(db_path,video_path, audio_path);
 
     videoManager = new HapPlayerManager(&playingQueue, &playing_mutex, &dbl);
     fbo.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA);
-    setSpeed(0);
 }
 
 //--------------------------------------------------------------
 void ofApp::update(){
     uint64_t mainUpdateTime = ofGetElapsedTimeMillis();
+    currentTime = ofGetElapsedTimef();
+
+    if (DEBUG_MODE && (currentTime - randomTime) >debugTimer ){
+        videoManager->playRandom();
+        randomTime =currentTime;
+        debugTimer = ofRandom(0., 5.);
+    }
     getMessages();
     if (NEW_VIDEOS){
         if (PLAY_IMMEDIATELY){
@@ -114,11 +120,6 @@ void ofApp::sendPlayingFile(){
     m.addInt64Arg(duration);
     m.addBoolArg(isLoop);
     sender.sendMessage(m);
-}
-
-void ofApp::setSpeed(int speedIndex){
-    SPEED =SPEEDS[speedIndex];
-    videoManager->setSpeed(SPEED);
 }
 
 void ofApp::getMessages() {
@@ -208,7 +209,6 @@ void ofApp::keyPressed(int key){
         videoManager->toggleOverlay();
         break;
     case '0':
-        setSpeed(0);
         break;
     }
 }

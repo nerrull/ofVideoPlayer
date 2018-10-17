@@ -20,8 +20,6 @@ public:
         string fileName;
     };
 
-
-
     HapPlayerManager(deque<PlayingInfo>*, ofMutex*, DatabaseLoader* );
     ~HapPlayerManager();
     void receiveVideo(string path);
@@ -32,8 +30,9 @@ public:
     void loadAllVideos(ofDirectory dir, int n);
     void loadVideoPaths(vector<string> paths, int n);
     void update();
-    bool draw(int x, int y);
+    void playRandom();
 
+    bool draw(int x, int y);
 
     void audioOut(ofSoundBuffer& buffer);
     float getWidth() {return players[playingVideoIndex].video.isLoaded() ? players[playingVideoIndex].video.getWidth() : 0;}
