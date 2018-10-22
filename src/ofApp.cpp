@@ -68,7 +68,7 @@ void ofApp::update(){
 
     if (FBO_DIRTY){
         fbo.begin();
-        videoManager->draw(0,0);
+        videoManager->draw(0,0, ofGetWidth(), ofGetHeight());
         fbo.end();
         FBO_DIRTY = false;
     }
