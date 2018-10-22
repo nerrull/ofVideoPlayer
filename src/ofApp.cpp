@@ -2,6 +2,10 @@
 #include "ofxJsonSettings.h"
 
 
+
+
+bool ofApp::FOCUSED= false;
+
 //--------------------------------------------------------------
 void ofApp::setup(){
 
@@ -22,13 +26,20 @@ void ofApp::setup(){
     string audio_path =  Settings::getString("audio_path");
     DEBUG_MODE=  Settings::getBool("debug_mode");
     OVERLAY = Settings::getBool("overlay");
+//    font.setLineHeight(100);
+    focus_warning_string  ="CLICK HERE FOR\nVIDEO TO WORK WELL";
+    focus_warning_string_fr  ="CLIQUEZ ICI POUR\n VIDEOS FONCTIONNELS";
+
+    FOCUSED = false;
+    font.load("futura.ttf", 35);
 
     debugTimer = 1.;
     randomTime = 0.;
     dbl.loadVideoPaths(db_path,video_path, audio_path);
 
     videoManager = new HapPlayerManager(&playingQueue, &playing_mutex, &dbl);
-    fbo.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA);
+    fbo.allocate(ofGetWidth(), ofGetHeight(), GL_RGB);
+
 }
 
 //--------------------------------------------------------------
@@ -87,6 +98,13 @@ void ofApp::draw(){
         w = ofGetWidth();
         ofDrawBitmapString(strm.str(), w-w/4+2, 20);
     }
+
+    if (!FOCUSED){
+        font.drawString(focus_warning_string_fr,20, ofGetHeight()/2);
+
+        font.drawString(focus_warning_string,ofGetWidth()/2, ofGetHeight()/2);
+    }
+
 
     drawUpdateTime = ofGetElapsedTimeMillis() -drawUpdateTime;
     // ofLogError()<<"Draw time: "<< drawUpdateTime;
@@ -263,6 +281,19 @@ void ofApp::dragEvent(ofDragInfo dragInfo){
 
 }
 
+
+void ofApp::window_focus_callback(GLFWwindow* window, int focused)
+{
+    if (focused)
+    {
+        FOCUSED = true;
+    }
+    else
+    {
+        FOCUSED = false;
+        // The window lost input focus
+    }
+}
 //void ofApp::audioOut(ofSoundBuffer & buffer){
 
 //  videoManager->audioOut(buffer);

@@ -1,21 +1,21 @@
 #include "ofMain.h"
 #include "ofApp.h"
 #include "ofxJsonSettings.h"
-
+#define GLFW_INCLUDE_NONE
+#include "GLFW/glfw3.h"
 //========================================================================
+
 int main( ){
     ofGLFWWindowSettings settings;
     Settings::get().load("settings.json");
 
-    settings.setSize(1920,1080);
-    settings.monitor =Settings::getInt("monitor_index");
+    settings.setSize(Settings::getInt("monitor_width"), Settings::getInt("monitor_height"));
+    settings.monitor =Settings::getInt("monitor_index");    settings.monitor =Settings::getInt("monitor_index");
     settings.windowMode = Settings::getBool("windowed") ? OF_WINDOW :OF_FULLSCREEN;
 
     ofCreateWindow(settings);
-//    ofSetupOpenGL(1920,1080,OF_FULLSCREEN);			// <-------- setup the GL context
-    // this kicks off the running of my app
-	// can be OF_WINDOW or OF_FULLSCREEN
-	// pass in width and height too:
-	ofRunApp(new ofApp());
+    auto app = new ofApp();
 
+    glfwSetWindowFocusCallback(((ofAppGLFWWindow*) ofGetWindowPtr())->getGLFWWindow(), app->window_focus_callback );
+    ofRunApp(app);
 }
