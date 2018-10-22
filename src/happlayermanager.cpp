@@ -16,8 +16,6 @@ HapPlayerManager::HapPlayerManager(deque<PlayingInfo> *pq, ofMutex *pm,  Databas
     DEV_MODE = Settings::getBool("dev_mode");
     OVERLAY = Settings::getBool("overlay");
     videoPath = Settings::getString("video_path");
-
-
     int num_videos = -1;
 
     if (DEV_MODE){
@@ -37,44 +35,23 @@ HapPlayerManager::~HapPlayerManager() {
 
 }
 
-void HapPlayerManager::loadAllVideos(ofDirectory dir, int num_videos){
-    if (num_videos==-1){
-        num_videos = dir.size();
+#include <sys/stat.h>
+#include <fstream>
+#include <unistd.h>
+
+inline bool exists_test_why(const std::string& name) {
+  struct stat buffer;
+  return (stat (name.c_str(), &buffer) == 0);
+}
+
+
+inline bool exists_test (const std::string& name) {
+    if (FILE *file = fopen(name.c_str(), "r")) {
+        fclose(file);
+        return true;
+    } else {
+        return false;
     }
-
-   players.resize(num_videos);
-   for (int i = 0; i<num_videos;i++){
-       string movieFile = dir.getName(i);
-
-       size_t lastindex = movieFile.find_last_of(".");
-       string rawname = movieFile.substr(0, lastindex);
-       string fullpath =videoPath + movieFile;
-       ofLogNotice(ofToString(ofGetElapsedTimef(),3)) << "[Loading " <<i <<"/"<<num_videos <<"] " << fullpath;
-
-       players[i].status  = loading;
-       players[i].loadTime = ofGetElapsedTimeMillis();
-       players[i].video.setLoopState(OF_LOOP_NORMAL);
-       players[i].videoID  = rawname;
-       players[i].filePath  = fullpath;
-
-       players[i].video.load(fullpath);
-       players[i].loadTime = ofGetElapsedTimeMillis()-players[i].loadTime;
-       players[i].video.play();
-
-       ofFbo loadFbo;
-       loadFbo.begin();
-       while(players[i].video.getPosition()*players[i].video.getDuration() < 0.05 )
-       {
-           ofEventArgs e;
-           players[i].video.update(e);
-           players[i].video.draw(0,0);
-           ofSleepMillis(10);
-//            players[i].video.nextFrame();
-       }
-       loadFbo.end();
-       players[i].video.setPaused(true);
-       toPlayVideoIndexes.push_back(i);
-   }
 }
 
 
@@ -84,6 +61,8 @@ void HapPlayerManager::loadVideoPaths(vector<string> filepaths, int num_videos){
    }
 
    players.resize(num_videos);
+   ofFbo loadFbo;
+   loadFbo.begin();
    for (int i = 0; i<num_videos;i++){
        string movieFile = filepaths[i];
 
@@ -94,6 +73,10 @@ void HapPlayerManager::loadVideoPaths(vector<string> filepaths, int num_videos){
 
        ofLogNotice(ofToString(ofGetElapsedTimef(),3)) << "Loading [" <<i <<"/"<<num_videos <<"] " << fullpath;
 
+       if (!exists_test(fullpath)){
+           ofLogError(ofToString(ofGetElapsedTimef(),3))<< "BROKEN damn FILE - "<< fullpath;
+           continue;
+       }
        players[i].status  = loading;
        players[i].loadTime = ofGetElapsedTimeMillis();
        players[i].video.setLoopState(OF_LOOP_NORMAL);
@@ -104,8 +87,7 @@ void HapPlayerManager::loadVideoPaths(vector<string> filepaths, int num_videos){
        players[i].loadTime = ofGetElapsedTimeMillis()-players[i].loadTime;
        players[i].video.play();
 
-       ofFbo loadFbo;
-       loadFbo.begin();
+
        while(players[i].video.getPosition()*players[i].video.getDuration() < 0.05 )
        {
            ofEventArgs e;
@@ -114,10 +96,11 @@ void HapPlayerManager::loadVideoPaths(vector<string> filepaths, int num_videos){
            ofSleepMillis(10);
 //            players[i].video.nextFrame();
        }
-       loadFbo.end();
+       players[i].video.setPosition(0);
        players[i].video.setPaused(true);
-       toPlayVideoIndexes.push_back(i);
    }
+   loadFbo.end();
+
 }
 
 void HapPlayerManager::setSpeed(int speed) {
@@ -199,7 +182,6 @@ void HapPlayerManager::_playNextVideoLoaded(){
         return;
     }
     PlayingInfo pi(players[playingVideoIndex].videoID, players[playingVideoIndex].video.getDuration() -1. );
-
     playingQueue->push_front(pi);
 
 }
@@ -301,3 +283,49 @@ void HapPlayerManager::audioOut(ofSoundBuffer& buffer){
 
 }
 
+
+
+void HapPlayerManager::loadAllVideos(ofDirectory dir, int num_videos){
+    if (num_videos==-1){
+        num_videos = dir.size();
+    }
+
+   players.resize(num_videos);
+   for (int i = 0; i<num_videos;i++){
+       string movieFile = dir.getName(i);
+
+       size_t lastindex = movieFile.find_last_of(".");
+       string rawname = movieFile.substr(0, lastindex);
+       string fullpath =videoPath + movieFile;
+       ofLogNotice(ofToString(ofGetElapsedTimef(),3)) << "[Loading " <<i <<"/"<<num_videos <<"] " << fullpath;
+
+       if (!exists_test(fullpath)){
+           ofLogError(ofToString(ofGetElapsedTimef(),3))<< "BROKEN damn FILE - "<< fullpath;
+           continue;
+       }
+
+       players[i].status  = loading;
+       players[i].loadTime = ofGetElapsedTimeMillis();
+       players[i].video.setLoopState(OF_LOOP_NORMAL);
+       players[i].videoID  = rawname;
+       players[i].filePath  = fullpath;
+
+       players[i].video.load(fullpath);
+       players[i].loadTime = ofGetElapsedTimeMillis()-players[i].loadTime;
+       players[i].video.play();
+
+       ofFbo loadFbo;
+       loadFbo.begin();
+       while(players[i].video.getPosition()*players[i].video.getDuration() < 0.05 )
+       {
+           ofEventArgs e;
+           players[i].video.update(e);
+           players[i].video.draw(0,0);
+           ofSleepMillis(10);
+//            players[i].video.nextFrame();
+       }
+       loadFbo.end();
+       players[i].video.setPaused(true);
+       toPlayVideoIndexes.push_back(i);
+   }
+}
