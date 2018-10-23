@@ -223,13 +223,13 @@ void HapPlayerManager::update(){
         playNow(players[playingVideoIndex].videoID);
     }
 }
-bool HapPlayerManager::draw(int x, int y){
+bool HapPlayerManager::draw(int x, int y,int w, int h){
 
     static bool isDrawing = false;
     int volumeSteps =1;
     ofPushStyle();
     ofSetColor(255);
-    players[playingVideoIndex].video.draw(x, y);
+    players[playingVideoIndex].video.draw(x, y, w,h);
     ofDisableBlendMode();
     ofPopStyle();
     isDrawing = true;
@@ -237,8 +237,6 @@ bool HapPlayerManager::draw(int x, int y){
     if (!OVERLAY) return isDrawing;
     ofPushStyle();
     ofSetColor(0, 0, 0, 150);
-    int w = ofGetWidth();
-    int h = ofGetHeight();
     ofDrawRectangle(w-w/4-2, 0, w/4+2, h);
     ofNoFill();
     ofSetColor(255, 0, 0);

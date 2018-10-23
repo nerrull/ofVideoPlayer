@@ -32,7 +32,7 @@ public:
     void update();
     void playRandom();
 
-    bool draw(int x, int y);
+    bool draw(int x, int y, int w, int h);
 
     void audioOut(ofSoundBuffer& buffer);
     float getWidth() {return players[playingVideoIndex].video.isLoaded() ? players[playingVideoIndex].video.getWidth() : 0;}
